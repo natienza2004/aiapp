@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory - Edit Item</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="edit">
+  <header>
+    <h1>Edit Item</h1>
+    <a class="button" href="index.html">← Back</a>
+  </header>
+
+  <main>
+    <form id="item-form">
+      <div class="form-row">
+        <label for="name">Name</label>
+        <input id="name" name="name" required />
+      </div>
+
+      <div class="form-row">
+        <label for="quantity">Quantity</label>
+        <input id="quantity" name="quantity" type="number" min="0" required />
+      </div>
+
+      <div class="form-row">
+        <label for="category">Category</label>
+        <input id="category" name="category" required />
+      </div>
+
+      <div class="form-row">
+        <label for="description">Description</label>
+        <textarea id="description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="button primary">Update</button>
+      </div>
+
+      <div id="form-status" class="status"></div>
+    </form>
+  </main>
+
+  <script type="module" src="js/inventory.js"></script>
+</body>
+</html>

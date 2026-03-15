@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inventory - List</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="list">
+  <header>
+    <h1>Inventory</h1>
+    <a class="button" href="add-item.html">+ Add Item</a>
+  </header>
+
+  <main>
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Qty</th>
+          <th>Category</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="inventory-body">
+        <tr><td colspan="6" class="loading">Loading…</td></tr>
+      </tbody>
+    </table>
+  </main>
+
+  <script type="module" src="js/inventory.js"></script>
+</body>
+</html>
