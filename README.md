@@ -17,6 +17,16 @@ This repository contains a simple inventory management system built with **NestJ
 
 ---
 
+## App Screenshoots how it works
+
+![Login Page](screenshots/ss1.jpg)
+![Register](screenshots/ss2.jpg)
+![Landing page user](screenshots/ss3.jpg)
+![Add items](screenshots/ss4.jpg)
+![Edit](screenshots/ss5.jpg)
+![Admin Page](screenshots/ss6.jpg)
+
+
 ## Prerequisites
 
 - Node.js 18+ (or compatible)
@@ -74,7 +84,7 @@ Visit:
 The app reads database settings from environment variables (defaults shown):
 
 - `DB_HOST` (default: `localhost`)
-- `DB_PORT` (default: `3306`)
+- `DB_PORT` (default: `3000`)
 - `DB_USER` (default: `root`)
 - `DB_PASS` (default: empty)
 - `DB_NAME` (default: `inventory_db`)
