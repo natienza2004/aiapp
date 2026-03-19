@@ -16,4 +16,12 @@ export class CreateItemDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
+  @IsOptional()
+  @IsInt()
+  reporterId?: number;
 }

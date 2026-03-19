@@ -1,4 +1,18 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, ParseIntPipe } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Headers,
+  Param,
+  Patch,
+  Post,
+  ParseIntPipe,
+  UnauthorizedException,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { ItemsService } from './items.service';
 import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
@@ -8,7 +22,15 @@ export class ItemsController {
   constructor(private readonly itemsService: ItemsService) {}
 
   @Get()
-  findAll() {
+  findAll(
+    @Headers('x-user-role') role: string,
+    @Headers('x-user-id') userIdHeader: string,
+  ) {
+    const roleNormalized = (role || '').toUpperCase();
+    const userId = Number(userIdHeader);
+    if (roleNormalized === 'STUDENT' && Number.isFinite(userId)) {
+      return this.itemsService.findAllForUser(userId);
+    }
     return this.itemsService.findAll();
   }
 
@@ -18,20 +40,78 @@ export class ItemsController {
   }
 
   @Post()
-  create(@Body() createItemDto: CreateItemDto) {
-    return this.itemsService.create(createItemDto);
+  @UseInterceptors(FileInterceptor('image'))
+  async create(
+    @Body() createItemDto: CreateItemDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('x-user-id') userIdHeader: string,
+  ) {
+    const userId = Number(userIdHeader);
+    if (!Number.isFinite(userId)) {
+      throw new UnauthorizedException('Missing user id');
+    }
+
+    const dto: CreateItemDto = {
+      ...createItemDto,
+      reporterId: userId,
+      imageUrl: file ? `/uploads/${file.filename}` : undefined,
+    };
+
+    return this.itemsService.create(dto);
   }
 
   @Patch(':id')
-  update(
+  @UseInterceptors(FileInterceptor('image'))
+  async update(
     @Param('id', ParseIntPipe) id: number,
     @Body() updateItemDto: UpdateItemDto,
+    @UploadedFile() file: Express.Multer.File,
+    @Headers('x-user-role') role: string,
+    @Headers('x-user-id') userIdHeader: string,
   ) {
-    return this.itemsService.update(id, updateItemDto);
+    const roleNormalized = (role || '').toUpperCase();
+    const userId = Number(userIdHeader);
+
+    if (roleNormalized !== 'ADMIN') {
+      if (!Number.isFinite(userId)) {
+        throw new UnauthorizedException('Missing user id');
+      }
+
+      const item = await this.itemsService.findOne(id);
+      if (item.reporterId !== userId) {
+        throw new UnauthorizedException('Only the reporter or admins can update this item');
+      }
+    }
+
+    const dto: UpdateItemDto = {
+      ...updateItemDto,
+      imageUrl: file ? `/uploads/${file.filename}` : undefined,
+    };
+
+    return this.itemsService.update(id, dto);
   }
 
   @Delete(':id')
-  remove(@Param('id', ParseIntPipe) id: number) {
+  async remove(
+    @Param('id', ParseIntPipe) id: number,
+    @Headers('x-user-role') role: string,
+    @Headers('x-user-id') userIdHeader: string,
+  ) {
+    const roleNormalized = (role || '').toUpperCase();
+    const userId = Number(userIdHeader);
+
+    if (roleNormalized !== 'ADMIN') {
+      if (!Number.isFinite(userId)) {
+        throw new UnauthorizedException('Missing user id');
+      }
+
+      const item = await this.itemsService.findOne(id);
+      if (item.reporterId !== userId) {
+        throw new UnauthorizedException('Only the reporter or admins can delete this item');
+      }
+    }
+
     return this.itemsService.remove(id);
   }
 }
+

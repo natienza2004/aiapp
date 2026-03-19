@@ -10,7 +10,10 @@
 <body data-page="edit">
   <header>
     <h1>Edit Item</h1>
-    <a class="button" href="index.html">← Back</a>
+    <div>
+      <a class="button" href="dashboard.html">← Back</a>
+      <button id="logout" class="button">Logout</button>
+    </div>
   </header>
 
   <main>
@@ -33,6 +36,11 @@
       <div class="form-row">
         <label for="description">Description</label>
         <textarea id="description" name="description" rows="3"></textarea>
+      </div>
+
+      <div class="form-row">
+        <label for="image">Image</label>
+        <input id="image" name="image" type="file" accept="image/*" />
       </div>
 
       <div class="form-actions">

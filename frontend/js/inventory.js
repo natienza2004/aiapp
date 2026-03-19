@@ -1,4 +1,5 @@
 import { createItem, deleteItem, getItem, getItems, updateItem } from './api.js';
+import { getStoredUser, requireAuth, redirectToDashboard } from './auth.js';
 
 const statusEl = document.getElementById('form-status');
 
@@ -17,27 +18,45 @@ function formatDate(iso) {
   return date.toLocaleString();
 }
 
+function createImageCell(item) {
+  if (!item.imageUrl) return '<td></td>';
+  return `
+    <td>
+      <img class="thumb" src="${item.imageUrl}" alt="${item.name}" />
+    </td>
+  `;
+}
+
 async function initList() {
+  const user = requireAuth({ allow: ['STUDENT', 'ADMIN'], redirectTo: 'login.html' });
+  if (!user) return;
+
+  if (user.role === 'ADMIN') {
+    redirectToDashboard(user);
+    return;
+  }
+
   const tbody = document.getElementById('inventory-body');
   if (!tbody) return;
 
   try {
     const items = await getItems();
     tbody.innerHTML = items
-      .map(
-        (item) =>
-          `<tr>
+      .map((item) => {
+        const canManage = user.role === 'ADMIN' || item.reporterId === user.id;
+        return `
+          <tr>
             <td>${item.id}</td>
+            ${createImageCell(item)}
             <td>${item.name}</td>
             <td>${item.quantity}</td>
             <td>${item.category}</td>
             <td>${formatDate(item.createdAt)}</td>
             <td class="actions">
-              <a class="button" href="edit-item.html?id=${item.id}">Edit</a>
-              <button class="button" data-id="${item.id}">Delete</button>
+              ${canManage ? `<a class="button" href="edit-item.html?id=${item.id}">Edit</a><button class="button delete-btn" data-id="${item.id}">Delete</button>` : ''}
             </td>
-          </tr>`,
-      )
+          </tr>`;
+      })
       .join('');
 
     tbody.querySelectorAll('button[data-id]').forEach((button) => {
@@ -54,9 +73,31 @@ async function initList() {
         }
       });
     });
+
+    // Image zoom
+    tbody.querySelectorAll('.thumb').forEach((img) => {
+      img.addEventListener('click', () => {
+        const modal = document.getElementById('image-modal');
+        const modalImg = document.getElementById('modal-image');
+        modal.style.display = 'block';
+        modalImg.src = img.src;
+        modalImg.alt = img.alt;
+      });
+    });
+
+    const modal = document.getElementById('image-modal');
+    const closeBtn = modal.querySelector('.close');
+    closeBtn.addEventListener('click', () => {
+      modal.style.display = 'none';
+    });
+    modal.addEventListener('click', (event) => {
+      if (event.target === modal) {
+        modal.style.display = 'none';
+      }
+    });
   } catch (err) {
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="6" class="loading">${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="7" class="loading">${err.message}</td></tr>`;
     }
   }
 }
@@ -69,18 +110,12 @@ function bindForm(onSubmit) {
     event.preventDefault();
 
     const formData = new FormData(form);
-    const data = {
-      name: String(formData.get('name') ?? '').trim(),
-      quantity: Number(formData.get('quantity') ?? 0),
-      category: String(formData.get('category') ?? '').trim(),
-      description: String(formData.get('description') ?? '').trim(),
-    };
 
     try {
-      await onSubmit(data);
+      await onSubmit(formData);
       setStatus('Saved successfully', 'success');
       setTimeout(() => {
-        window.location.href = 'index.html';
+        window.location.href = 'dashboard.html';
       }, 600);
     } catch (err) {
       setStatus(err.message, 'error');
@@ -89,12 +124,18 @@ function bindForm(onSubmit) {
 }
 
 async function initAdd() {
-  bindForm(async (values) => {
-    await createItem(values);
+  const user = requireAuth({ allow: ['STUDENT'], redirectTo: 'login.html' });
+  if (!user) return;
+
+  bindForm(async (formData) => {
+    await createItem(formData);
   });
 }
 
 async function initEdit() {
+  const user = requireAuth({ allow: ['STUDENT', 'ADMIN'], redirectTo: 'login.html' });
+  if (!user) return;
+
   const idParam = getParam('id');
   const id = idParam ? Number(idParam) : NaN;
   if (!id) {
@@ -104,13 +145,19 @@ async function initEdit() {
 
   try {
     const item = await getItem(id);
+
+    if (user.role !== 'ADMIN' && item.reporterId !== user.id) {
+      setStatus('You are not allowed to edit this item.', 'error');
+      return;
+    }
+
     document.getElementById('name').value = item.name;
     document.getElementById('quantity').value = String(item.quantity);
     document.getElementById('category').value = item.category;
     document.getElementById('description').value = item.description || '';
 
-    bindForm(async (values) => {
-      await updateItem(id, values);
+    bindForm(async (formData) => {
+      await updateItem(id, formData);
     });
   } catch (err) {
     setStatus(err.message, 'error');
@@ -119,7 +166,7 @@ async function initEdit() {
 
 function mount() {
   const page = document.body.dataset.page;
-  if (page === 'list') {
+  if (page === 'dashboard') {
     initList();
   }
 

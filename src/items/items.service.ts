@@ -16,6 +16,13 @@ export class ItemsService {
     return this.itemRepository.find({ order: { createdAt: 'DESC' } });
   }
 
+  findAllForUser(userId: number): Promise<Item[]> {
+    return this.itemRepository.find({
+      where: { reporterId: userId },
+      order: { createdAt: 'DESC' },
+    });
+  }
+
   async findOne(id: number): Promise<Item> {
     const item = await this.itemRepository.findOne({ where: { id } });
     if (!item) {

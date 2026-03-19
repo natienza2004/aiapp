@@ -1,4 +1,12 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from '../users/user.entity';
 
 @Entity({ name: 'items' })
 export class Item {
@@ -16,6 +24,16 @@ export class Item {
 
   @Column({ type: 'text', nullable: true })
   description?: string;
+
+  @Column({ length: 255, nullable: true })
+  imageUrl?: string;
+
+  @Column({ type: 'int' })
+  reporterId: number;
+
+  @ManyToOne(() => User, (user) => user.items, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'reporterId' })
+  reporter: User;
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

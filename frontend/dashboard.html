@@ -4,13 +4,16 @@
   <meta charset="UTF-8" />
   <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventory - List</title>
+  <title>Inventory - Dashboard</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
-<body data-page="list">
+<body data-page="dashboard">
   <header>
-    <h1>Inventory</h1>
-    <a class="button" href="add-item.html">+ Add Item</a>
+    <h1>Student Dashboard</h1>
+    <div id="user-actions">
+      <a class="button" href="add-item.html">+ Add Item</a>
+      <button id="logout" class="button">Logout</button>
+    </div>
   </header>
 
   <main>
@@ -18,6 +21,7 @@
       <thead>
         <tr>
           <th>ID</th>
+          <th>Image</th>
           <th>Name</th>
           <th>Qty</th>
           <th>Category</th>
@@ -26,10 +30,17 @@
         </tr>
       </thead>
       <tbody id="inventory-body">
-        <tr><td colspan="6" class="loading">Loading…</td></tr>
+        <tr><td colspan="7" class="loading">Loading…</td></tr>
       </tbody>
     </table>
   </main>
+
+  <div id="image-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <img id="modal-image" src="" alt="" />
+    </div>
+  </div>
 
   <script type="module" src="js/inventory.js"></script>
 </body>

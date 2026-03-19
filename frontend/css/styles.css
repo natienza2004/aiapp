@@ -141,3 +141,93 @@ main {
     padding: 0.65rem;
   }
 }
+
+/* Modal for image zoom */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.9);
+}
+
+.modal-content {
+  margin: auto;
+  display: block;
+  width: 80%;
+  max-width: 700px;
+}
+
+.modal-content img {
+  width: 100%;
+  height: auto;
+}
+
+.close {
+  position: absolute;
+  top: 15px;
+  right: 35px;
+  color: #f1f1f1;
+  font-size: 40px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover,
+.close:focus {
+  color: #bbb;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.thumb {
+  max-width: 50px;
+  max-height: 50px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+.thumb {
+  max-width: 60px;
+  max-height: 40px;
+  object-fit: cover;
+  border-radius: 0.35rem;
+  cursor: pointer;
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.image-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  z-index: 9999;
+}
+
+.image-overlay img {
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.image-overlay .close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 999px;
+  width: 2rem;
+  height: 2rem;
+  cursor: pointer;
+  font-weight: 700;
+  color: #111;
+}

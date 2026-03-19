@@ -1,5 +1,14 @@
 const BASE_URL = '/items';
 
+function getAuthHeaders() {
+  const headers = {};
+  const userId = localStorage.getItem('userId');
+  const role = localStorage.getItem('role');
+  if (userId) headers['x-user-id'] = userId;
+  if (role) headers['x-user-role'] = role;
+  return headers;
+}
+
 async function safeJson(response) {
   if (!response.ok) {
     const body = await response.text();
@@ -9,29 +18,33 @@ async function safeJson(response) {
 }
 
 export async function getItems() {
-  const response = await fetch(BASE_URL);
-  return safeJson(response);
-}
-
-export async function getItem(id) {
-  const response = await fetch(`${BASE_URL}/${id}`);
-  return safeJson(response);
-}
-
-export async function createItem(item) {
   const response = await fetch(BASE_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(item),
+    headers: getAuthHeaders(),
   });
   return safeJson(response);
 }
 
-export async function updateItem(id, item) {
+export async function getItem(id) {
+  const response = await fetch(`${BASE_URL}/${id}`, {
+    headers: getAuthHeaders(),
+  });
+  return safeJson(response);
+}
+
+export async function createItem(formData) {
+  const response = await fetch(BASE_URL, {
+    method: 'POST',
+    headers: getAuthHeaders(),
+    body: formData,
+  });
+  return safeJson(response);
+}
+
+export async function updateItem(id, formData) {
   const response = await fetch(`${BASE_URL}/${id}`, {
     method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(item),
+    headers: getAuthHeaders(),
+    body: formData,
   });
   return safeJson(response);
 }
@@ -39,9 +52,17 @@ export async function updateItem(id, item) {
 export async function deleteItem(id) {
   const response = await fetch(`${BASE_URL}/${id}`, {
     method: 'DELETE',
+    headers: getAuthHeaders(),
   });
   if (!response.ok) {
     const body = await response.text();
     throw new Error(body || response.statusText);
   }
+}
+
+export async function getUsers() {
+  const response = await fetch('/users', {
+    headers: getAuthHeaders(),
+  });
+  return safeJson(response);
 }
