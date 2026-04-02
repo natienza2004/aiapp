@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { MulterModule } from '@nestjs/platform-express';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { join } from 'path';
+import { diskStorage } from 'multer';
+import { extname, join } from 'path';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,14 +16,16 @@ import { UsersModule } from './users/users.module';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'frontend'),
-      exclude: ['/items*', '/users*'],
-    }),
-    ServeStaticModule.forRoot({
-      rootPath: join(process.cwd(), 'uploads'),
-      serveRoot: '/uploads',
+      exclude: ['/items*', '/users*', '/uploads*'],
     }),
     MulterModule.register({
-      dest: './uploads',
+      storage: diskStorage({
+        destination: './uploads',
+        filename: (_req, file, cb) => {
+          const unique = `${Date.now()}-${Math.round(Math.random() * 1e6)}`;
+          cb(null, `${unique}${extname(file.originalname)}`);
+        },
+      }),
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',

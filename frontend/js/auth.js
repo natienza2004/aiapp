@@ -145,4 +145,11 @@ if (page === 'register') {
 
 if (page === 'dashboard' || page === 'list' || page === 'add' || page === 'edit' || page === 'admin') {
   attachAuthActions();
+  const user = getStoredUser();
+  const avatarEl = document.getElementById('sidebar-avatar');
+  const nameEl = document.getElementById('sidebar-name');
+  const roleEl = document.getElementById('sidebar-role');
+  if (user && avatarEl) avatarEl.textContent = user.name ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2) : '?';
+  if (user && nameEl) nameEl.textContent = user.name || 'User';
+  if (user && roleEl) roleEl.textContent = user.role || '';
 }

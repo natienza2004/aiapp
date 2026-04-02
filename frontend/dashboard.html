@@ -2,38 +2,84 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventory - Dashboard</title>
+  <title>InvenTrack — Dashboard</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-page="dashboard">
-  <header>
-    <h1>Student Dashboard</h1>
-    <div id="user-actions">
-      <a class="button" href="add-item.html">+ Add Item</a>
-      <button id="logout" class="button">Logout</button>
-    </div>
-  </header>
+  <div class="app-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📦</div>
+        <div>
+          <span>InvenTrack</span>
+          <small>Inventory System</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Menu</div>
+        <a class="nav-link active" href="dashboard.html">
+          <span class="nav-icon">🗂️</span> My Inventory
+        </a>
+        <a class="nav-link" href="add-item.html">
+          <span class="nav-icon">➕</span> Add Item
+        </a>
+        <div class="nav-label" style="margin-top:0.5rem;">Account</div>
+        <a class="nav-link" href="profile.html">
+          <span class="nav-icon">👤</span> Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Loading…</div>
+            <div class="user-role">Student</div>
+          </div>
+        </div>
+        <button id="logout" class="button danger" style="width:100%;margin-top:0.5rem;">Sign out</button>
+      </div>
+    </aside>
 
-  <main>
-    <table class="inventory-table">
-      <thead>
-        <tr>
-          <th>ID</th>
-          <th>Image</th>
-          <th>Name</th>
-          <th>Qty</th>
-          <th>Category</th>
-          <th>Created</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody id="inventory-body">
-        <tr><td colspan="7" class="loading">Loading…</td></tr>
-      </tbody>
-    </table>
-  </main>
+    <!-- Main -->
+    <div class="page-content">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">My Inventory</div>
+          <div class="topbar-sub">Manage your reported items</div>
+        </div>
+        <div class="topbar-actions">
+          <a class="button primary" href="add-item.html">➕ Add Item</a>
+        </div>
+      </div>
+
+      <div class="main-inner">
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>Items</h2>
+            <span class="badge" id="item-count">—</span>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Qty</th>
+                <th>Category</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-body">
+              <tr><td colspan="7" class="loading">Loading items…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <div id="image-modal" class="modal">
     <div class="modal-content">

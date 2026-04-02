@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Header, HttpCode, Post, Req, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, Patch, Post, Req, UnauthorizedException } from '@nestjs/common';
 import type { Request } from 'express';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -21,6 +21,20 @@ export class UsersController {
       throw new UnauthorizedException('Invalid credentials');
     }
     return user;
+  }
+
+  @Get('me')
+  async getMe(@Req() req: Request) {
+    const userId = Number(req.headers['x-user-id']);
+    if (!userId) throw new UnauthorizedException();
+    return this.usersService.getProfile(userId);
+  }
+
+  @Patch('me')
+  async updateMe(@Req() req: Request, @Body() body: { name?: string; password?: string }) {
+    const userId = Number(req.headers['x-user-id']);
+    if (!userId) throw new UnauthorizedException();
+    return this.usersService.updateProfile(userId, body);
   }
 
   @Get()

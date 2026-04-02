@@ -1,9 +1,15 @@
 import { NestFactory } from '@nestjs/core';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
+import * as express from 'express';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.enableCors();
+
+  // Serve uploads BEFORE ServeStaticModule catches everything
+  app.use('/uploads', express.static(join(process.cwd(), 'uploads')));
 
   const port = Number(process.env.PORT ?? 3000);
   await app.listen(port);

@@ -20,21 +20,12 @@ function formatDate(iso) {
 
 function createImageCell(item) {
   if (!item.imageUrl) return '<td></td>';
-  return `
-    <td>
-      <img class="thumb" src="${item.imageUrl}" alt="${item.name}" />
-    </td>
-  `;
+  return `<td><img class="thumb" src="${item.imageUrl}" alt="${item.name}" /></td>`;
 }
 
 async function initList() {
   const user = requireAuth({ allow: ['STUDENT', 'ADMIN'], redirectTo: 'login.html' });
   if (!user) return;
-
-  if (user.role === 'ADMIN') {
-    redirectToDashboard(user);
-    return;
-  }
 
   const tbody = document.getElementById('inventory-body');
   if (!tbody) return;
@@ -42,11 +33,11 @@ async function initList() {
   try {
     const items = await getItems();
     tbody.innerHTML = items
-      .map((item) => {
+      .map((item, index) => {
         const canManage = user.role === 'ADMIN' || item.reporterId === user.id;
         return `
           <tr>
-            <td>${item.id}</td>
+            <td>${index + 1}</td>
             ${createImageCell(item)}
             <td>${item.name}</td>
             <td>${item.quantity}</td>
@@ -102,6 +93,24 @@ async function initList() {
   }
 }
 
+function bindImagePreview(existingUrl = null) {
+  const input = document.getElementById('image');
+  const preview = document.getElementById('image-preview');
+  if (!input || !preview) return;
+
+  if (existingUrl) {
+    preview.src = existingUrl;
+    preview.style.display = 'block';
+  }
+
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = 'block';
+  });
+}
+
 function bindForm(onSubmit) {
   const form = document.getElementById('item-form');
   if (!form) return;
@@ -124,9 +133,10 @@ function bindForm(onSubmit) {
 }
 
 async function initAdd() {
-  const user = requireAuth({ allow: ['STUDENT'], redirectTo: 'login.html' });
+  const user = requireAuth({ allow: ['STUDENT', 'ADMIN'], redirectTo: 'login.html' });
   if (!user) return;
 
+  bindImagePreview();
   bindForm(async (formData) => {
     await createItem(formData);
   });
@@ -156,6 +166,7 @@ async function initEdit() {
     document.getElementById('category').value = item.category;
     document.getElementById('description').value = item.description || '';
 
+    bindImagePreview(item.imageUrl || null);
     bindForm(async (formData) => {
       await updateItem(id, formData);
     });

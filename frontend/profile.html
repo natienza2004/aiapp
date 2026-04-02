@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvenTrack — Profile</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+    .profile-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 1.25rem;
+      align-items: start;
+    }
+    .profile-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .profile-banner {
+      height: 80px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      position: relative;
+    }
+    .profile-avatar-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 1.5rem 1.5rem;
+      margin-top: -36px;
+    }
+    .profile-avatar-big {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border: 3px solid var(--surface);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.75rem;
+      font-weight: 800;
+      color: #fff;
+      box-shadow: 0 0 24px var(--accent-glow);
+    }
+    .profile-display-name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-top: 0.75rem;
+      text-align: center;
+    }
+    .profile-display-email {
+      font-size: 0.78rem;
+      color: var(--text3);
+      margin-top: 0.2rem;
+      text-align: center;
+    }
+    .profile-meta {
+      margin-top: 1rem;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    .profile-meta-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.55rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8rem;
+    }
+    .profile-meta-row:last-child { border-bottom: none; }
+    .profile-meta-row .meta-label { color: var(--text3); font-weight: 500; }
+    .profile-meta-row .meta-value { color: var(--text); font-weight: 600; }
+    .form-section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 1.25rem;
+    }
+    .form-section-header {
+      padding: 1rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+    .form-section-header .section-icon {
+      width: 32px; height: 32px;
+      border-radius: var(--radius-sm);
+      background: rgba(99,102,241,0.15);
+      border: 1px solid rgba(99,102,241,0.25);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.9rem;
+    }
+    .form-section-header h3 { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+    .form-section-header p { font-size: 0.75rem; color: var(--text3); margin-top: 1px; }
+    .form-section-body { padding: 1.5rem; }
+    .inline-fields {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .danger-zone {
+      background: rgba(239,68,68,0.05);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: var(--radius);
+      padding: 1.25rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .danger-zone h4 { font-size: 0.875rem; font-weight: 700; color: #fca5a5; }
+    .danger-zone p { font-size: 0.78rem; color: var(--text3); margin-top: 0.2rem; }
+    @media (max-width: 860px) {
+      .profile-grid { grid-template-columns: 1fr; }
+      .inline-fields { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body data-page="profile">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📦</div>
+        <div>
+          <span>InvenTrack</span>
+          <small>Inventory System</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Menu</div>
+        <a class="nav-link" href="dashboard.html" id="nav-dashboard">
+          <span class="nav-icon">🗂️</span> My Inventory
+        </a>
+        <a class="nav-link" href="add-item.html" id="nav-add">
+          <span class="nav-icon">➕</span> Add Item
+        </a>
+        <a class="nav-link" href="admin.html" id="nav-admin" style="display:none;">
+          <span class="nav-icon">⚙️</span> Admin Panel
+        </a>
+        <div class="nav-label" style="margin-top:0.5rem;">Account</div>
+        <a class="nav-link active" href="profile.html">
+          <span class="nav-icon">👤</span> Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Loading…</div>
+            <div class="user-role" id="sidebar-role">—</div>
+          </div>
+        </div>
+        <button id="logout" class="button danger" style="width:100%;margin-top:0.5rem;">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="page-content">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Account Profile</div>
+          <div class="topbar-sub">Manage your personal information</div>
+        </div>
+      </div>
+
+      <div class="main-inner">
+        <div class="profile-grid">
+
+          <!-- Left: Profile Card -->
+          <div>
+            <div class="profile-card">
+              <div class="profile-banner"></div>
+              <div class="profile-avatar-wrap">
+                <div class="profile-avatar-big" id="profile-avatar-big">?</div>
+                <div class="profile-display-name" id="profile-display-name">—</div>
+                <div class="profile-display-email" id="profile-display-email">—</div>
+                <div class="profile-meta">
+                  <div class="profile-meta-row">
+                    <span class="meta-label">Role</span>
+                    <span class="meta-value" id="profile-role">—</span>
+                  </div>
+                  <div class="profile-meta-row">
+                    <span class="meta-label">Member since</span>
+                    <span class="meta-value" id="profile-joined">—</span>
+                  </div>
+                  <div class="profile-meta-row">
+                    <span class="meta-label">Items reported</span>
+                    <span class="meta-value" id="profile-item-count">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Edit Forms -->
+          <div>
+            <!-- Update Info -->
+            <div class="form-section">
+              <div class="form-section-header">
+                <div class="section-icon">✏️</div>
+                <div>
+                  <h3>Personal Information</h3>
+                  <p>Update your display name</p>
+                </div>
+              </div>
+              <div class="form-section-body">
+                <form id="info-form">
+                  <div class="inline-fields">
+                    <div class="field">
+                      <label for="edit-name">Full Name</label>
+                      <input id="edit-name" name="name" placeholder="Your name" required />
+                    </div>
+                    <div class="field">
+                      <label>Email Address</label>
+                      <input id="edit-email" disabled style="opacity:0.5;cursor:not-allowed;" />
+                    </div>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+                    <button type="submit" class="button primary">Save changes</button>
+                  </div>
+                  <div id="info-status" class="status"></div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Change Password -->
+            <div class="form-section">
+              <div class="form-section-header">
+                <div class="section-icon">🔒</div>
+                <div>
+                  <h3>Change Password</h3>
+                  <p>Use a strong password you don't use elsewhere</p>
+                </div>
+              </div>
+              <div class="form-section-body">
+                <form id="password-form">
+                  <div class="inline-fields">
+                    <div class="field">
+                      <label for="new-password">New Password</label>
+                      <input id="new-password" name="password" type="password" placeholder="Min. 6 characters" minlength="6" required />
+                    </div>
+                    <div class="field">
+                      <label for="confirm-password">Confirm Password</label>
+                      <input id="confirm-password" type="password" placeholder="Repeat password" required />
+                    </div>
+                  </div>
+                  <div style="display:flex;justify-content:flex-end;gap:0.5rem;margin-top:0.5rem;">
+                    <button type="submit" class="button primary">Update password</button>
+                  </div>
+                  <div id="password-status" class="status"></div>
+                </form>
+              </div>
+            </div>
+
+            <!-- Danger Zone -->
+            <div class="danger-zone">
+              <div>
+                <h4>Sign out everywhere</h4>
+                <p>This will clear your session from this browser.</p>
+              </div>
+              <button id="logout-danger" class="button danger">Sign out</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/profile.js"></script>
+</body>
+</html>

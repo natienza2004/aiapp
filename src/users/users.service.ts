@@ -29,6 +29,21 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { id } });
   }
 
+  async getProfile(id: number): Promise<Partial<User>> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    return { id: user.id, name: user.name, email: user.email, role: user.role, createdAt: user.createdAt };
+  }
+
+  async updateProfile(id: number, dto: { name?: string; password?: string }): Promise<Partial<User>> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) throw new NotFoundException('User not found');
+    if (dto.name) user.name = dto.name;
+    if (dto.password) user.password = await this.hashPassword(dto.password);
+    const saved = await this.usersRepository.save(user);
+    return { id: saved.id, name: saved.name, email: saved.email, role: saved.role };
+  }
+
   async validateCredentials(email: string, password: string): Promise<Partial<User> | null> {
     const user = await this.findByEmail(email);
     if (!user) return null;

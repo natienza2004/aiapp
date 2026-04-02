@@ -2,60 +2,155 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventory - Admin</title>
+  <title>InvenTrack — Admin</title>
   <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body data-page="admin">
-  <header>
-    <h1>Admin Dashboard</h1>
-    <div>
-      <a class="button" href="dashboard.html">Student</a>
-      <button id="logout" class="button">Logout</button>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📦</div>
+        <div>
+          <span>InvenTrack</span>
+          <small>Inventory System</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Admin</div>
+        <a class="nav-link active" href="admin.html">
+          <span class="nav-icon">⚙️</span> Admin Panel
+        </a>
+        <a class="nav-link" href="dashboard.html">
+          <span class="nav-icon">🗂️</span> Student View
+        </a>
+        <a class="nav-link" href="add-item.html">
+          <span class="nav-icon">➕</span> Add Item
+        </a>
+        <div class="nav-label" style="margin-top:0.5rem;">Account</div>
+        <a class="nav-link" href="profile.html">
+          <span class="nav-icon">👤</span> Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Loading…</div>
+            <div class="user-role" id="sidebar-role">ADMIN</div>
+          </div>
+        </div>
+        <button id="logout" class="button danger" style="width:100%;margin-top:0.5rem;">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="page-content">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Admin Dashboard</div>
+          <div class="topbar-sub">Overview of all inventory and users</div>
+        </div>
+      </div>
+
+      <div class="main-inner">
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-icon">📦</span>
+            <div class="stat-value" id="stat-total-items">—</div>
+            <div class="stat-label">Total Items</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🔢</span>
+            <div class="stat-value" id="stat-total-qty">—</div>
+            <div class="stat-label">Total Quantity</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🏷️</span>
+            <div class="stat-value" id="stat-categories">—</div>
+            <div class="stat-label">Categories</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">👥</span>
+            <div class="stat-value" id="stat-total-users">—</div>
+            <div class="stat-label">Users</div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Items by Category</h3>
+            <canvas id="chart-category"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Items Added Over Time</h3>
+            <canvas id="chart-timeline"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Quantity per Category</h3>
+            <canvas id="chart-qty"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>User Roles</h3>
+            <canvas id="chart-roles"></canvas>
+          </div>
+          <div class="chart-card" style="grid-column: 1 / -1;">
+            <h3>Items per Owner</h3>
+            <canvas id="chart-owners" style="max-height:200px;"></canvas>
+          </div>
+        </div>
+
+        <!-- Inventory Table -->
+        <div class="section-card" style="margin-bottom:1.5rem;">
+          <div class="section-card-header">
+            <h2>Inventory</h2>
+            <span class="badge" id="inv-count">—</span>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Qty</th>
+                <th>Category</th>
+                <th>Owner</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-body">
+              <tr><td colspan="8" class="loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Users Table -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>Users</h2>
+            <span class="badge" id="users-count">—</span>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Joined</th>
+              </tr>
+            </thead>
+            <tbody id="users-body">
+              <tr><td colspan="5" class="loading">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-  </header>
-
-  <main>
-    <section>
-      <h2>Inventory</h2>
-      <table class="inventory-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Qty</th>
-            <th>Category</th>
-            <th>Reporter</th>
-            <th>Created</th>
-            <th>Actions</th>
-          </tr>
-        </thead>
-        <tbody id="inventory-body">
-          <tr><td colspan="8" class="loading">Loading…</td></tr>
-        </tbody>
-      </table>
-    </section>
-
-    <section>
-      <h2>Users</h2>
-      <table class="inventory-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Role</th>
-            <th>Created</th>
-          </tr>
-        </thead>
-        <tbody id="users-body">
-          <tr><td colspan="5" class="loading">Loading…</td></tr>
-        </tbody>
-      </table>
-    </section>
-  </main>
+  </div>
 
   <div id="image-modal" class="modal">
     <div class="modal-content">

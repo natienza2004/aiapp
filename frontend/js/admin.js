@@ -6,6 +6,92 @@ function formatDate(iso) {
   return date.toLocaleString();
 }
 
+const PALETTE = ['#1a73e8','#34a853','#fbbc04','#ea4335','#9c27b0','#00bcd4','#ff5722','#607d8b'];
+
+function renderCharts(items, users) {
+  // Stats
+  document.getElementById('stat-total-items').textContent = items.length;
+  document.getElementById('stat-total-qty').textContent = items.reduce((s, i) => s + (i.quantity || 0), 0);
+  document.getElementById('stat-total-users').textContent = users.length;
+
+  // Category counts
+  const catCount = {};
+  const catQty = {};
+  items.forEach(({ category, quantity }) => {
+    catCount[category] = (catCount[category] || 0) + 1;
+    catQty[category] = (catQty[category] || 0) + (quantity || 0);
+  });
+  const cats = Object.keys(catCount);
+  document.getElementById('stat-categories').textContent = cats.length;
+
+  new Chart(document.getElementById('chart-category'), {
+    type: 'bar',
+    data: {
+      labels: cats,
+      datasets: [{ label: 'Items', data: cats.map(c => catCount[c]), backgroundColor: PALETTE }],
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } },
+  });
+
+  new Chart(document.getElementById('chart-qty'), {
+    type: 'doughnut',
+    data: {
+      labels: cats,
+      datasets: [{ data: cats.map(c => catQty[c]), backgroundColor: PALETTE }],
+    },
+    options: { plugins: { legend: { position: 'bottom' } } },
+  });
+
+  // Timeline — group by YYYY-MM
+  const byMonth = {};
+  items.forEach(({ createdAt }) => {
+    const key = createdAt ? createdAt.slice(0, 7) : 'Unknown';
+    byMonth[key] = (byMonth[key] || 0) + 1;
+  });
+  const months = Object.keys(byMonth).sort();
+  new Chart(document.getElementById('chart-timeline'), {
+    type: 'line',
+    data: {
+      labels: months,
+      datasets: [{ label: 'Items Added', data: months.map(m => byMonth[m]), borderColor: '#1a73e8', backgroundColor: 'rgba(26,115,232,0.1)', fill: true, tension: 0.3 }],
+    },
+    options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } },
+  });
+
+  // User roles
+  const roleCount = {};
+  users.forEach(({ role }) => { roleCount[role] = (roleCount[role] || 0) + 1; });
+  const roles = Object.keys(roleCount);
+  new Chart(document.getElementById('chart-roles'), {
+    type: 'pie',
+    data: {
+      labels: roles,
+      datasets: [{ data: roles.map(r => roleCount[r]), backgroundColor: PALETTE }],
+    },
+    options: { plugins: { legend: { position: 'bottom' } } },
+  });
+
+  // Items per owner
+  const ownerCount = {};
+  items.forEach(({ reporter, reporterId }) => {
+    const label = reporter ? `${reporter.name}` : `User #${reporterId}`;
+    ownerCount[label] = (ownerCount[label] || 0) + 1;
+  });
+  const owners = Object.keys(ownerCount);
+  new Chart(document.getElementById('chart-owners'), {
+    type: 'bar',
+    data: {
+      labels: owners,
+      datasets: [{ label: 'Items Owned', data: owners.map(o => ownerCount[o]), backgroundColor: PALETTE }],
+    },
+    options: {
+      indexAxis: 'y',
+      plugins: { legend: { display: false } },
+      scales: { x: { beginAtZero: true, ticks: { stepSize: 1 } } },
+    },
+  });
+}
+
 function createImageCell(item) {
   if (!item.imageUrl) return '<td></td>';
   return `
@@ -19,20 +105,25 @@ async function initAdmin() {
   const user = requireAuth({ allow: ['ADMIN'], redirectTo: 'login.html' });
   if (!user) return;
 
+  let items = [], users = [];
+
   // Load items
   const itemsTbody = document.getElementById('inventory-body');
   try {
-    const items = await getItems();
+    items = await getItems();
     itemsTbody.innerHTML = items
-      .map((item) => {
+      .map((item, index) => {
         return `
           <tr>
-            <td>${item.id}</td>
+            <td>${index + 1}</td>
             ${createImageCell(item)}
             <td>${item.name}</td>
             <td>${item.quantity}</td>
             <td>${item.category}</td>
-            <td>${item.reporter?.name || 'Unknown'}</td>
+            <td>
+              <div style="font-weight:600;">${item.reporter?.name || 'Unknown'}</div>
+              ${item.reporter?.email ? `<div style="font-size:0.78rem;color:#6b7280;">${item.reporter.email}</div>` : ''}
+            </td>
             <td>${formatDate(item.createdAt)}</td>
             <td class="actions">
               <a class="button" href="edit-item.html?id=${item.id}">Edit</a>
@@ -73,12 +164,12 @@ async function initAdmin() {
   // Load users
   const usersTbody = document.getElementById('users-body');
   try {
-    const users = await getUsers();
+    users = await getUsers();
     usersTbody.innerHTML = users
-      .map((user) => {
+      .map((user, index) => {
         return `
           <tr>
-            <td>${user.id}</td>
+            <td>${index + 1}</td>
             <td>${user.name}</td>
             <td>${user.email}</td>
             <td>${user.role}</td>
@@ -89,6 +180,8 @@ async function initAdmin() {
   } catch (err) {
     usersTbody.innerHTML = `<tr><td colspan="5" class="loading">${err.message}</td></tr>`;
   }
+
+  renderCharts(items, users);
 
   // Modal close
   const modal = document.getElementById('image-modal');

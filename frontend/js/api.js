@@ -66,3 +66,17 @@ export async function getUsers() {
   });
   return safeJson(response);
 }
+
+export async function getProfile() {
+  const response = await fetch('/users/me', { headers: getAuthHeaders() });
+  return safeJson(response);
+}
+
+export async function updateProfile(data) {
+  const response = await fetch('/users/me', {
+    method: 'PATCH',
+    headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return safeJson(response);
+}

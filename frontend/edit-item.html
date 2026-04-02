@@ -2,55 +2,97 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inventory - Edit Item</title>
+  <title>InvenTrack — Edit Item</title>
   <link rel="stylesheet" href="css/styles.css" />
 </head>
 <body data-page="edit">
-  <header>
-    <h1>Edit Item</h1>
-    <div>
-      <a class="button" href="dashboard.html">← Back</a>
-      <button id="logout" class="button">Logout</button>
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📦</div>
+        <div>
+          <span>InvenTrack</span>
+          <small>Inventory System</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Menu</div>
+        <a class="nav-link" href="dashboard.html">
+          <span class="nav-icon">🗂️</span> My Inventory
+        </a>
+        <a class="nav-link" href="add-item.html">
+          <span class="nav-icon">➕</span> Add Item
+        </a>
+        <div class="nav-label" style="margin-top:0.5rem;">Account</div>
+        <a class="nav-link" href="profile.html">
+          <span class="nav-icon">👤</span> Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Loading…</div>
+            <div class="user-role" id="sidebar-role">—</div>
+          </div>
+        </div>
+        <button id="logout" class="button danger" style="width:100%;margin-top:0.5rem;">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="page-content">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Edit Item</div>
+          <div class="topbar-sub">Update inventory item details</div>
+        </div>
+        <div class="topbar-actions">
+          <a class="button" href="dashboard.html">← Back</a>
+        </div>
+      </div>
+
+      <div class="main-inner">
+        <div class="form-card">
+          <form id="item-form">
+            <div class="field">
+              <label for="name">Item Name</label>
+              <input id="name" name="name" placeholder="e.g. Laptop, Chair…" required />
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+              <div class="field">
+                <label for="quantity">Quantity</label>
+                <input id="quantity" name="quantity" type="number" min="0" placeholder="0" required />
+              </div>
+              <div class="field">
+                <label for="category">Category</label>
+                <input id="category" name="category" placeholder="e.g. Electronics" required />
+              </div>
+            </div>
+            <div class="field">
+              <label for="description">Description</label>
+              <textarea id="description" name="description" rows="3" placeholder="Optional details…"></textarea>
+            </div>
+            <div class="field">
+              <label>Image</label>
+              <div class="file-upload-area">
+                <input id="image" name="image" type="file" accept="image/*" />
+                <div class="upload-icon">🖼️</div>
+                <p><strong>Click to replace</strong> or leave empty to keep current</p>
+                <p>PNG, JPG, WEBP up to 10MB</p>
+              </div>
+              <img id="image-preview" src="" alt="preview" />
+            </div>
+            <div class="form-actions">
+              <a class="button" href="dashboard.html">Cancel</a>
+              <button type="submit" class="button primary">Update Item</button>
+            </div>
+            <div id="form-status" class="status"></div>
+          </form>
+        </div>
+      </div>
     </div>
-  </header>
-
-  <main>
-    <form id="item-form">
-      <div class="form-row">
-        <label for="name">Name</label>
-        <input id="name" name="name" required />
-      </div>
-
-      <div class="form-row">
-        <label for="quantity">Quantity</label>
-        <input id="quantity" name="quantity" type="number" min="0" required />
-      </div>
-
-      <div class="form-row">
-        <label for="category">Category</label>
-        <input id="category" name="category" required />
-      </div>
-
-      <div class="form-row">
-        <label for="description">Description</label>
-        <textarea id="description" name="description" rows="3"></textarea>
-      </div>
-
-      <div class="form-row">
-        <label for="image">Image</label>
-        <input id="image" name="image" type="file" accept="image/*" />
-      </div>
-
-      <div class="form-actions">
-        <button type="submit" class="button primary">Update</button>
-      </div>
-
-      <div id="form-status" class="status"></div>
-    </form>
-  </main>
-
+  </div>
   <script type="module" src="js/inventory.js"></script>
 </body>
 </html>
