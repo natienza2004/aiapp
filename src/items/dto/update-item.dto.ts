@@ -1,3 +1,4 @@
+import { Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Min } from 'class-validator';
 
 export class UpdateItemDto {
@@ -6,6 +7,7 @@ export class UpdateItemDto {
   name?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   quantity?: number;

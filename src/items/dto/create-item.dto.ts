@@ -1,14 +1,19 @@
-import { IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsDefined, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateItemDto {
+  @IsDefined()
   @IsNotEmpty()
   @IsString()
   name: string;
 
+  @IsDefined()
+  @Type(() => Number)
   @IsInt()
   @Min(0)
   quantity: number;
 
+  @IsDefined()
   @IsNotEmpty()
   @IsString()
   category: string;
@@ -22,6 +27,7 @@ export class CreateItemDto {
   imageUrl?: string;
 
   @IsOptional()
+  @Type(() => Number)
   @IsInt()
   reporterId?: number;
 }
