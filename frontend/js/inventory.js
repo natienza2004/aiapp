@@ -19,8 +19,9 @@ function formatDate(iso) {
 }
 
 function createImageCell(item) {
-  if (!item.imageUrl) return '<td></td>';
-  return `<td><img class="thumb" src="${item.imageUrl}" alt="${item.name}" /></td>`;
+  const url = item.imageUrl;
+  if (!url || url === '/uploads/undefined' || url.endsWith('/undefined')) return '<td><div class="no-img">🖼️</div></td>';
+  return `<td><img class="thumb" src="${url}" alt="${item.name}" /></td>`;
 }
 
 async function initList() {
@@ -119,6 +120,12 @@ function bindForm(onSubmit) {
     event.preventDefault();
 
     const formData = new FormData(form);
+
+    // Remove empty image field so Multer doesn't receive a 0-byte file
+    const imageFile = formData.get('image');
+    if (!imageFile || (imageFile instanceof File && imageFile.size === 0)) {
+      formData.delete('image');
+    }
 
     try {
       await onSubmit(formData);

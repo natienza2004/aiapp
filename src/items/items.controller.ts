@@ -85,7 +85,7 @@ export class ItemsController {
 
     const dto: UpdateItemDto = {
       ...updateItemDto,
-      imageUrl: file ? `/uploads/${file.filename}` : undefined,
+      ...(file ? { imageUrl: `/uploads/${file.filename}` } : {}),
     };
 
     return this.itemsService.update(id, dto);
