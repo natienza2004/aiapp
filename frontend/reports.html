@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvenTrack — Reports</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body data-page="reports">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📦</div>
+        <div>
+          <span>InvenTrack</span>
+          <small>Inventory System</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Menu</div>
+        <a class="nav-link" href="dashboard.html">
+          <span class="nav-icon">🗂️</span> My Inventory
+        </a>
+        <a class="nav-link" href="add-item.html">
+          <span class="nav-icon">➕</span> Add Item
+        </a>
+        <a class="nav-link active" href="reports.html">
+          <span class="nav-icon">📊</span> Reports
+        </a>
+        <div class="nav-label" style="margin-top:0.5rem;">Account</div>
+        <a class="nav-link" href="profile.html">
+          <span class="nav-icon">👤</span> Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Loading…</div>
+            <div class="user-role" id="sidebar-role">—</div>
+          </div>
+        </div>
+        <button id="logout" class="button danger" style="width:100%;margin-top:0.5rem;">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="page-content">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Reports</div>
+          <div class="topbar-sub">Inventory analytics and insights</div>
+        </div>
+        <div class="topbar-actions">
+          <button id="export-csv" class="button">📥 Export CSV</button>
+        </div>
+      </div>
+
+      <div class="main-inner">
+        <!-- Summary Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="total-items">—</div>
+            <div class="stat-label">Total Items</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔢</div>
+            <div class="stat-value" id="total-quantity">—</div>
+            <div class="stat-label">Total Quantity</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="total-value">—</div>
+            <div class="stat-label">Total Value</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-value" id="total-categories">—</div>
+            <div class="stat-label">Categories</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📍</div>
+            <div class="stat-value" id="total-locations">—</div>
+            <div class="stat-label">Locations</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⚠️</div>
+            <div class="stat-value" id="low-stock-count">—</div>
+            <div class="stat-label">Low Stock Items</div>
+          </div>
+        </div>
+
+        <!-- Value Report -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>💰 Inventory Value Report</h2>
+          </div>
+          <div style="padding: 1.5rem;">
+            <div class="value-report-grid">
+              <div class="value-item">
+                <div class="value-label">Total Value</div>
+                <div class="value-amount" id="value-total">—</div>
+              </div>
+              <div class="value-item">
+                <div class="value-label">Highest Value Item</div>
+                <div class="value-amount" id="value-highest">—</div>
+              </div>
+              <div class="value-item">
+                <div class="value-label">Lowest Value Item</div>
+                <div class="value-amount" id="value-lowest">—</div>
+              </div>
+              <div class="value-item">
+                <div class="value-label">Average Item Value</div>
+                <div class="value-amount" id="value-average">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Category Distribution</h3>
+            <canvas id="category-chart"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Location Distribution</h3>
+            <canvas id="location-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Category Report -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>🏷️ Category Report</h2>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Category</th>
+                <th>Items</th>
+                <th>Quantity</th>
+                <th>Total Value</th>
+              </tr>
+            </thead>
+            <tbody id="category-report-body">
+              <tr><td colspan="4" class="loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Location Report -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>📍 Location Report</h2>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Location</th>
+                <th>Items</th>
+                <th>Quantity</th>
+                <th>Total Value</th>
+              </tr>
+            </thead>
+            <tbody id="location-report-body">
+              <tr><td colspan="4" class="loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Stock Report -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>📊 Stock Status Report</h2>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Quantity</th>
+                <th>Threshold</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="stock-report-body">
+              <tr><td colspan="4" class="loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>🕒 Recent Activity</h2>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Item Name</th>
+                <th>Action</th>
+                <th>Date & Time</th>
+              </tr>
+            </thead>
+            <tbody id="activity-report-body">
+              <tr><td colspan="3" class="loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/reports.js"></script>
+</body>
+</html>

@@ -18,12 +18,13 @@ import { LocationsModule } from './locations/locations.module';
 import { Reminder } from './reminders/reminder.entity';
 import { RemindersModule } from './reminders/reminders.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { ReportsModule } from './reports/reports.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'frontend'),
-      exclude: ['/items*', '/users*', '/uploads*', '/categories*', '/locations*', '/reminders*', '/dashboard*'],
+      exclude: ['/items*', '/users*', '/uploads*', '/categories*', '/locations*', '/reminders*', '/dashboard*', '/reports*'],
     }),
     MulterModule.register({
       storage: diskStorage({
@@ -50,6 +51,7 @@ import { DashboardModule } from './dashboard/dashboard.module';
     LocationsModule,
     RemindersModule,
     DashboardModule,
+    ReportsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
