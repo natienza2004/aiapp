@@ -60,6 +60,21 @@ export async function deleteItem(id) {
   }
 }
 
+export async function getCategories() {
+  const response = await fetch('/categories', { headers: getAuthHeaders() });
+  return safeJson(response);
+}
+
+export async function getLocations() {
+  const response = await fetch('/locations', { headers: getAuthHeaders() });
+  return safeJson(response);
+}
+
+export async function getDashboardSummary() {
+  const response = await fetch('/dashboard/summary', { headers: getAuthHeaders() });
+  return safeJson(response);
+}
+
 export async function getUsers() {
   const response = await fetch('/users', {
     headers: getAuthHeaders(),

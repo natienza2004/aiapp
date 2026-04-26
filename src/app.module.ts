@@ -11,12 +11,19 @@ import { Item } from './items/item.entity';
 import { ItemsModule } from './items/items.module';
 import { User } from './users/user.entity';
 import { UsersModule } from './users/users.module';
+import { Category } from './categories/category.entity';
+import { CategoriesModule } from './categories/categories.module';
+import { Location } from './locations/location.entity';
+import { LocationsModule } from './locations/locations.module';
+import { Reminder } from './reminders/reminder.entity';
+import { RemindersModule } from './reminders/reminders.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'frontend'),
-      exclude: ['/items*', '/users*', '/uploads*'],
+      exclude: ['/items*', '/users*', '/uploads*', '/categories*', '/locations*', '/reminders*', '/dashboard*'],
     }),
     MulterModule.register({
       storage: diskStorage({
@@ -34,11 +41,15 @@ import { UsersModule } from './users/users.module';
       username: process.env.DB_USER ?? 'root',
       password: process.env.DB_PASS ?? '',
       database: process.env.DB_NAME ?? 'inventory_db',
-      entities: [Item, User],
+      entities: [Item, User, Category, Location, Reminder],
       synchronize: true,
     }),
     ItemsModule,
     UsersModule,
+    CategoriesModule,
+    LocationsModule,
+    RemindersModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],

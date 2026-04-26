@@ -6,10 +6,12 @@ import { extname } from 'path';
 import { ItemsController } from './items.controller';
 import { ItemsService } from './items.service';
 import { Item } from './item.entity';
+import { Category } from '../categories/category.entity';
+import { Location } from '../locations/location.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Item]),
+    TypeOrmModule.forFeature([Item, Category, Location]),
     MulterModule.register({
       storage: diskStorage({
         destination: './uploads',

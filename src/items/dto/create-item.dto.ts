@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsDefined, IsInt, IsNotEmpty, IsOptional, IsString, Min } from 'class-validator';
+import { IsDecimal, IsDefined, IsInt, IsNotEmpty, IsNumber, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateItemDto {
   @IsDefined()
@@ -7,20 +7,37 @@ export class CreateItemDto {
   @IsString()
   name: string;
 
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  categoryId?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  locationId?: number;
+
   @IsDefined()
   @Type(() => Number)
   @IsInt()
   @Min(0)
   quantity: number;
 
-  @IsDefined()
-  @IsNotEmpty()
-  @IsString()
-  category: string;
+  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  @Min(0)
+  value?: number;
 
   @IsOptional()
-  @IsString()
-  description?: string;
+  @Type(() => Number)
+  @IsInt()
+  @Min(0)
+  lowStockThreshold?: number;
 
   @IsOptional()
   @IsString()
@@ -30,4 +47,13 @@ export class CreateItemDto {
   @Type(() => Number)
   @IsInt()
   reporterId?: number;
+
+  // Backward compatibility - old forms send 'category' as string
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  location?: string;
 }

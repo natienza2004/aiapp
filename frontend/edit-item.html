@@ -65,8 +65,18 @@
                 <input id="quantity" name="quantity" type="number" min="0" placeholder="0" required />
               </div>
               <div class="field">
+                <label for="value">Value (per unit) ₱</label>
+                <input id="value" name="value" type="number" min="0" step="0.01" placeholder="0.00" />
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+              <div class="field">
                 <label for="category">Category</label>
                 <input id="category" name="category" placeholder="e.g. Electronics" required />
+              </div>
+              <div class="field">
+                <label for="location">Location</label>
+                <input id="location" name="location" placeholder="e.g. Warehouse A" required />
               </div>
             </div>
             <div class="field">

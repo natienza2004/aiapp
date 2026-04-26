@@ -55,6 +55,34 @@
       </div>
 
       <div class="main-inner">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📦</div>
+            <div class="stat-value" id="total-items">—</div>
+            <div class="stat-label">Total Items</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🔢</div>
+            <div class="stat-value" id="total-quantity">—</div>
+            <div class="stat-label">Total Quantity</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">💰</div>
+            <div class="stat-value" id="total-value">—</div>
+            <div class="stat-label">Total Value</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🏷️</div>
+            <div class="stat-value" id="total-categories">—</div>
+            <div class="stat-label">Categories</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📍</div>
+            <div class="stat-value" id="total-locations">—</div>
+            <div class="stat-label">Locations</div>
+          </div>
+        </div>
+
         <div class="section-card">
           <div class="section-card-header">
             <h2>Items</h2>
@@ -68,12 +96,13 @@
                 <th>Name</th>
                 <th>Qty</th>
                 <th>Category</th>
+                <th>Location</th>
                 <th>Created</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody id="inventory-body">
-              <tr><td colspan="7" class="loading">Loading items…</td></tr>
+              <tr><td colspan="8" class="loading">Loading items…</td></tr>
             </tbody>
           </table>
         </div>

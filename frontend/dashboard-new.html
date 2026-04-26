@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvenTrack — Dashboard</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body data-page="dashboard-new">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📦</div>
+        <div>
+          <span>InvenTrack</span>
+          <small>Inventory System</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Main</div>
+        <a class="nav-link active" href="dashboard-new.html">
+          <span class="nav-icon">📊</span> Dashboard
+        </a>
+        <a class="nav-link" href="items-list.html">
+          <span class="nav-icon">📦</span> Items
+        </a>
+        <a class="nav-link" href="categories-list.html">
+          <span class="nav-icon">🏷️</span> Categories
+        </a>
+        <a class="nav-link" href="locations-list.html">
+          <span class="nav-icon">📍</span> Locations
+        </a>
+        <div class="nav-label" style="margin-top:0.5rem;">Account</div>
+        <a class="nav-link" href="profile.html">
+          <span class="nav-icon">👤</span> Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Loading…</div>
+            <div class="user-role" id="sidebar-role">—</div>
+          </div>
+        </div>
+        <button id="logout" class="button danger" style="width:100%;margin-top:0.5rem;">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="page-content">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title">Dashboard</div>
+          <div class="topbar-sub">Overview of your inventory</div>
+        </div>
+        <div class="topbar-actions">
+          <a class="button primary" href="add-item.html">➕ Add Item</a>
+        </div>
+      </div>
+
+      <div class="main-inner">
+        <!-- Summary Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-icon">📦</span>
+            <div class="stat-value" id="stat-total-items">—</div>
+            <div class="stat-label">Total Items</div>
+            <div class="stat-change" id="stat-items-change">—</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">💰</span>
+            <div class="stat-value" id="stat-total-value">—</div>
+            <div class="stat-label">Total Value</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🏷️</span>
+            <div class="stat-value" id="stat-categories">—</div>
+            <div class="stat-label">Categories</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">📍</span>
+            <div class="stat-value" id="stat-locations">—</div>
+            <div class="stat-label">Locations</div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="charts-grid">
+          <div class="chart-card">
+            <h3>Category Distribution</h3>
+            <canvas id="chart-category-dist"></canvas>
+          </div>
+          <div class="chart-card">
+            <h3>Value by Category</h3>
+            <canvas id="chart-value-category"></canvas>
+          </div>
+        </div>
+
+        <!-- Low Stock Alerts -->
+        <div class="section-card" style="margin-bottom:1.5rem;">
+          <div class="section-card-header">
+            <h2>⚠️ Low Stock Alerts</h2>
+            <span class="badge" id="low-stock-count">—</span>
+          </div>
+          <div class="alert-list" id="low-stock-list">
+            <div class="loading-state">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Upcoming Reminders -->
+        <div class="section-card" style="margin-bottom:1.5rem;">
+          <div class="section-card-header">
+            <h2>🔔 Upcoming Reminders</h2>
+            <span class="badge" id="reminders-count">—</span>
+          </div>
+          <div class="reminder-list" id="reminders-list">
+            <div class="loading-state">Loading...</div>
+          </div>
+        </div>
+
+        <!-- Recent Items -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>Recent Items</h2>
+            <a class="button" href="items-list.html">View All</a>
+          </div>
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Image</th>
+                <th>Name</th>
+                <th>Category</th>
+                <th>Location</th>
+                <th>Quantity</th>
+                <th>Value</th>
+                <th>Added</th>
+              </tr>
+            </thead>
+            <tbody id="recent-items-body">
+              <tr><td colspan="7" class="loading">Loading...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/dashboard-new.js"></script>
+</body>
+</html>

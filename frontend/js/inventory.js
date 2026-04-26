@@ -1,4 +1,4 @@
-import { createItem, deleteItem, getItem, getItems, updateItem } from './api.js';
+import { createItem, deleteItem, getItem, getItems, updateItem, getDashboardSummary } from './api.js';
 import { getStoredUser, requireAuth, redirectToDashboard } from './auth.js';
 
 const statusEl = document.getElementById('form-status');
@@ -32,17 +32,37 @@ async function initList() {
   if (!tbody) return;
 
   try {
-    const items = await getItems();
+    const [items, summary] = await Promise.all([getItems(), getDashboardSummary()]);
+    
+    // Update stats
+    const totalItemsEl = document.getElementById('total-items');
+    const totalQuantityEl = document.getElementById('total-quantity');
+    const totalValueEl = document.getElementById('total-value');
+    const totalCategoriesEl = document.getElementById('total-categories');
+    const totalLocationsEl = document.getElementById('total-locations');
+    
+    if (totalItemsEl) totalItemsEl.textContent = summary.totalItems || 0;
+    if (totalQuantityEl) totalQuantityEl.textContent = summary.totalQuantity || 0;
+    if (totalValueEl) totalValueEl.textContent = '₱' + (summary.totalValue || 0).toFixed(2);
+    if (totalCategoriesEl) totalCategoriesEl.textContent = summary.totalCategories || 0;
+    if (totalLocationsEl) totalLocationsEl.textContent = summary.totalLocations || 0;
+    
+    const itemCountBadge = document.getElementById('item-count');
+    if (itemCountBadge) itemCountBadge.textContent = items.length;
+    
     tbody.innerHTML = items
       .map((item, index) => {
         const canManage = user.role === 'ADMIN' || item.reporterId === user.id;
+        const categoryName = item.category?.name || 'N/A';
+        const locationName = item.location?.name || 'N/A';
         return `
           <tr>
             <td>${index + 1}</td>
             ${createImageCell(item)}
             <td>${item.name}</td>
             <td>${item.quantity}</td>
-            <td>${item.category}</td>
+            <td>${categoryName}</td>
+            <td>${locationName}</td>
             <td>${formatDate(item.createdAt)}</td>
             <td class="actions">
               ${canManage ? `<a class="button" href="edit-item.html?id=${item.id}">Edit</a><button class="button delete-btn" data-id="${item.id}">Delete</button>` : ''}
@@ -89,7 +109,7 @@ async function initList() {
     });
   } catch (err) {
     if (tbody) {
-      tbody.innerHTML = `<tr><td colspan="7" class="loading">${err.message}</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="8" class="loading">${err.message}</td></tr>`;
     }
   }
 }
@@ -170,7 +190,9 @@ async function initEdit() {
 
     document.getElementById('name').value = item.name;
     document.getElementById('quantity').value = String(item.quantity);
-    document.getElementById('category').value = item.category;
+    document.getElementById('value').value = item.value || '';
+    document.getElementById('category').value = item.category?.name || '';
+    document.getElementById('location').value = item.location?.name || '';
     document.getElementById('description').value = item.description || '';
 
     bindImagePreview(item.imageUrl || null);
