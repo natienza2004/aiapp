@@ -1,4 +1,4 @@
-import { createItem, deleteItem, getItem, getItems, updateItem, getDashboardSummary } from './api.js';
+import { createItem, deleteItem, getItem, getItems, updateItem, getDashboardSummary, searchItems } from './api.js';
 import { getStoredUser, requireAuth, redirectToDashboard } from './auth.js';
 
 const statusEl = document.getElementById('form-status');
@@ -22,6 +22,59 @@ function createImageCell(item) {
   const url = item.imageUrl;
   if (!url || url === '/uploads/undefined' || url.endsWith('/undefined')) return '<td><div class="no-img">🖼️</div></td>';
   return `<td><img class="thumb" src="${url}" alt="${item.name}" /></td>`;
+}
+
+function renderItems(items, user, tbody) {
+  if (items.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" class="loading">No items found.</td></tr>';
+    return;
+  }
+  
+  tbody.innerHTML = items
+    .map((item, index) => {
+      const canManage = user.role === 'ADMIN' || item.reporterId === user.id;
+      const categoryName = item.category?.name || 'N/A';
+      const locationName = item.location?.name || 'N/A';
+      return `
+        <tr>
+          <td>${index + 1}</td>
+          ${createImageCell(item)}
+          <td>${item.name}</td>
+          <td>${item.quantity}</td>
+          <td>${categoryName}</td>
+          <td>${locationName}</td>
+          <td>${formatDate(item.createdAt)}</td>
+          <td class="actions">
+            ${canManage ? `<a class="button" href="edit-item.html?id=${item.id}">Edit</a><button class="button delete-btn" data-id="${item.id}">Delete</button>` : ''}
+          </td>
+        </tr>`;
+    })
+    .join('');
+
+  tbody.querySelectorAll('button[data-id]').forEach((button) => {
+    button.addEventListener('click', async (event) => {
+      const id = Number(event.currentTarget.getAttribute('data-id'));
+      if (!id) return;
+      if (!confirm('Delete this item?')) return;
+      try {
+        await deleteItem(id);
+        setStatus('Item deleted.', 'success');
+        initList();
+      } catch (err) {
+        setStatus(err.message, 'error');
+      }
+    });
+  });
+
+  tbody.querySelectorAll('.thumb').forEach((img) => {
+    img.addEventListener('click', () => {
+      const modal = document.getElementById('image-modal');
+      const modalImg = document.getElementById('modal-image');
+      modal.style.display = 'block';
+      modalImg.src = img.src;
+      modalImg.alt = img.alt;
+    });
+  });
 }
 
 async function initList() {
@@ -50,52 +103,7 @@ async function initList() {
     const itemCountBadge = document.getElementById('item-count');
     if (itemCountBadge) itemCountBadge.textContent = items.length;
     
-    tbody.innerHTML = items
-      .map((item, index) => {
-        const canManage = user.role === 'ADMIN' || item.reporterId === user.id;
-        const categoryName = item.category?.name || 'N/A';
-        const locationName = item.location?.name || 'N/A';
-        return `
-          <tr>
-            <td>${index + 1}</td>
-            ${createImageCell(item)}
-            <td>${item.name}</td>
-            <td>${item.quantity}</td>
-            <td>${categoryName}</td>
-            <td>${locationName}</td>
-            <td>${formatDate(item.createdAt)}</td>
-            <td class="actions">
-              ${canManage ? `<a class="button" href="edit-item.html?id=${item.id}">Edit</a><button class="button delete-btn" data-id="${item.id}">Delete</button>` : ''}
-            </td>
-          </tr>`;
-      })
-      .join('');
-
-    tbody.querySelectorAll('button[data-id]').forEach((button) => {
-      button.addEventListener('click', async (event) => {
-        const id = Number(event.currentTarget.getAttribute('data-id'));
-        if (!id) return;
-        if (!confirm('Delete this item?')) return;
-        try {
-          await deleteItem(id);
-          setStatus('Item deleted.', 'success');
-          initList();
-        } catch (err) {
-          setStatus(err.message, 'error');
-        }
-      });
-    });
-
-    // Image zoom
-    tbody.querySelectorAll('.thumb').forEach((img) => {
-      img.addEventListener('click', () => {
-        const modal = document.getElementById('image-modal');
-        const modalImg = document.getElementById('modal-image');
-        modal.style.display = 'block';
-        modalImg.src = img.src;
-        modalImg.alt = img.alt;
-      });
-    });
+    renderItems(items, user, tbody);
 
     const modal = document.getElementById('image-modal');
     const closeBtn = modal.querySelector('.close');
@@ -107,6 +115,35 @@ async function initList() {
         modal.style.display = 'none';
       }
     });
+    
+    // Setup search
+    const searchInput = document.getElementById('search-input');
+    if (searchInput) {
+      let debounceTimer;
+      searchInput.addEventListener('input', (e) => {
+        clearTimeout(debounceTimer);
+        const query = e.target.value.trim();
+        
+        if (query.length === 0) {
+          renderItems(items, user, tbody);
+          return;
+        }
+        
+        if (query.length < 2) {
+          return;
+        }
+        
+        debounceTimer = setTimeout(async () => {
+          try {
+            tbody.innerHTML = '<tr><td colspan="8" class="loading">Searching...</td></tr>';
+            const results = await searchItems(query);
+            renderItems(results, user, tbody);
+          } catch (err) {
+            tbody.innerHTML = `<tr><td colspan="8" class="loading">${err.message}</td></tr>`;
+          }
+        }, 300);
+      });
+    }
   } catch (err) {
     if (tbody) {
       tbody.innerHTML = `<tr><td colspan="8" class="loading">${err.message}</td></tr>`;

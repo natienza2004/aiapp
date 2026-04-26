@@ -99,4 +99,27 @@ export class ItemsService {
     const item = await this.findOne(id);
     await this.itemRepository.remove(item);
   }
+
+  async search(query: string, userId: number, role: string): Promise<Item[]> {
+    if (!query || query.trim().length < 2) {
+      return [];
+    }
+
+    const searchTerm = `%${query.trim()}%`;
+    const queryBuilder = this.itemRepository
+      .createQueryBuilder('item')
+      .leftJoinAndSelect('item.reporter', 'reporter')
+      .leftJoinAndSelect('item.category', 'category')
+      .leftJoinAndSelect('item.location', 'location')
+      .where(
+        '(item.name LIKE :searchTerm OR item.description LIKE :searchTerm OR category.name LIKE :searchTerm OR location.name LIKE :searchTerm)',
+        { searchTerm },
+      );
+
+    if (role !== 'ADMIN') {
+      queryBuilder.andWhere('item.reporterId = :userId', { userId });
+    }
+
+    return queryBuilder.orderBy('item.createdAt', 'DESC').getMany();
+  }
 }

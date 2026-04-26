@@ -24,6 +24,13 @@ export async function getItems() {
   return safeJson(response);
 }
 
+export async function searchItems(query) {
+  const response = await fetch(`${BASE_URL}/search?query=${encodeURIComponent(query)}`, {
+    headers: getAuthHeaders(),
+  });
+  return safeJson(response);
+}
+
 export async function getItem(id) {
   const response = await fetch(`${BASE_URL}/${id}`, {
     headers: getAuthHeaders(),

@@ -7,6 +7,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   ParseIntPipe,
   UnauthorizedException,
   UseInterceptors,
@@ -32,6 +33,17 @@ export class ItemsController {
       return this.itemsService.findAllForUser(userId);
     }
     return this.itemsService.findAll();
+  }
+
+  @Get('search')
+  search(
+    @Query('query') query: string,
+    @Headers('x-user-role') role: string,
+    @Headers('x-user-id') userIdHeader: string,
+  ) {
+    const roleNormalized = (role || '').toUpperCase();
+    const userId = Number(userIdHeader);
+    return this.itemsService.search(query, userId, roleNormalized);
   }
 
   @Get(':id')
