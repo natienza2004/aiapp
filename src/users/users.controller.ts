@@ -1,4 +1,4 @@
-import { Body, Controller, Get, HttpCode, Patch, Post, Req, UnauthorizedException } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, Req, UnauthorizedException } from '@nestjs/common';
 import type { Request } from 'express';
 import { CreateUserDto } from './dto/create-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -44,5 +44,24 @@ export class UsersController {
       throw new UnauthorizedException('Admin access required');
     }
     return this.usersService.listAll();
+  }
+
+  @Delete(':id')
+  async deleteUser(
+    @Param('id', ParseIntPipe) id: number,
+    @Req() req: Request,
+  ) {
+    const role = (req.headers['x-user-role'] as string) || '';
+    const currentUserId = Number(req.headers['x-user-id']);
+    
+    if (role !== 'ADMIN') {
+      throw new UnauthorizedException('Admin access required');
+    }
+    
+    if (id === currentUserId) {
+      throw new UnauthorizedException('Cannot delete your own account');
+    }
+    
+    return this.usersService.deleteUser(id);
   }
 }

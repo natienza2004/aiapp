@@ -54,7 +54,31 @@ export class UsersService {
 
   async listAll(): Promise<Partial<User>[]> {
     const users = await this.usersRepository.find({ order: { createdAt: 'DESC' } });
-    return users.map((user) => ({ id: user.id, name: user.name, email: user.email, role: user.role }));
+    return users.map((user) => ({ 
+      id: user.id, 
+      name: user.name, 
+      email: user.email, 
+      role: user.role,
+      createdAt: user.createdAt,
+      isActive: true // Default to true since we don't have this field yet
+    }));
+  }
+
+  async deleteUser(id: number): Promise<void> {
+    const user = await this.usersRepository.findOne({ where: { id } });
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    
+    // Check if this is the last admin
+    if (user.role === UserRole.ADMIN) {
+      const adminCount = await this.usersRepository.count({ where: { role: UserRole.ADMIN } });
+      if (adminCount <= 1) {
+        throw new Error('Cannot delete the last admin user');
+      }
+    }
+    
+    await this.usersRepository.remove(user);
   }
 
   private async hashPassword(password: string): Promise<string> {
