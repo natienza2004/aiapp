@@ -89,6 +89,26 @@
             <div class="stat-value" id="low-stock-count">—</div>
             <div class="stat-label">Low Stock Items</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-icon">🚨</div>
+            <div class="stat-value" id="out-of-stock-count">—</div>
+            <div class="stat-label">Out of Stock</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📄</div>
+            <div class="stat-value" id="uncategorized-count">—</div>
+            <div class="stat-label">Uncategorized</div>
+          </div>
+        </div>
+
+        <!-- Actionable Insights -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>💡 Inventory Insights</h2>
+          </div>
+          <div class="insights-container" id="insights-container">
+            <div class="loading-state">Loading insights...</div>
+          </div>
         </div>
 
         <!-- Value Report -->
@@ -174,6 +194,12 @@
         <div class="section-card">
           <div class="section-card-header">
             <h2>📊 Stock Status Report</h2>
+            <div class="filter-buttons">
+              <button class="filter-btn active" data-filter="all">All</button>
+              <button class="filter-btn" data-filter="in-stock">In Stock</button>
+              <button class="filter-btn" data-filter="low-stock">Low Stock</button>
+              <button class="filter-btn" data-filter="out-of-stock">Out of Stock</button>
+            </div>
           </div>
           <table class="inventory-table">
             <thead>
@@ -182,12 +208,38 @@
                 <th>Quantity</th>
                 <th>Threshold</th>
                 <th>Status</th>
+                <th>Recommended Action</th>
               </tr>
             </thead>
             <tbody id="stock-report-body">
-              <tr><td colspan="4" class="loading">Loading...</td></tr>
+              <tr><td colspan="5" class="loading">Loading...</td></tr>
             </tbody>
           </table>
+        </div>
+
+        <!-- Data Quality Report -->
+        <div class="section-card">
+          <div class="section-card-header">
+            <h2>🔍 Data Quality Report</h2>
+          </div>
+          <div style="padding: 1.5rem;">
+            <div class="data-quality-section">
+              <h4>Items Without Category</h4>
+              <div id="quality-no-category" class="quality-list">Loading...</div>
+            </div>
+            <div class="data-quality-section">
+              <h4>Items Without Location</h4>
+              <div id="quality-no-location" class="quality-list">Loading...</div>
+            </div>
+            <div class="data-quality-section">
+              <h4>Items Without Value</h4>
+              <div id="quality-no-value" class="quality-list">Loading...</div>
+            </div>
+            <div class="data-quality-section">
+              <h4>Items Without Image</h4>
+              <div id="quality-no-image" class="quality-list">Loading...</div>
+            </div>
+          </div>
         </div>
 
         <!-- Recent Activity -->

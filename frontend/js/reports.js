@@ -36,6 +36,15 @@ function getStatusBadge(status) {
   return badges[status] || status;
 }
 
+function getRecommendedAction(status) {
+  const actions = {
+    'In Stock': 'No action needed',
+    'Low Stock': 'Restock soon',
+    'Out of Stock': 'Restock immediately',
+  };
+  return actions[status] || 'N/A';
+}
+
 async function loadSummary() {
   try {
     const data = await fetchReport('/summary');
@@ -46,6 +55,8 @@ async function loadSummary() {
     document.getElementById('total-categories').textContent = data.totalCategories || 0;
     document.getElementById('total-locations').textContent = data.totalLocations || 0;
     document.getElementById('low-stock-count').textContent = data.lowStockCount || 0;
+    document.getElementById('out-of-stock-count').textContent = data.outOfStockCount || 0;
+    document.getElementById('uncategorized-count').textContent = data.uncategorizedCount || 0;
 
     document.getElementById('value-total').textContent = formatCurrency(data.totalValue);
     document.getElementById('value-highest').textContent = data.highestValueItem 
@@ -116,18 +127,51 @@ async function loadStockReport() {
     const tbody = document.getElementById('stock-report-body');
     
     if (data.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="loading">No items found.</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="5" class="loading">No items found.</td></tr>';
       return;
     }
     
-    tbody.innerHTML = data.map(item => `
-      <tr>
-        <td>${item.name}</td>
-        <td>${item.quantity}</td>
-        <td>${item.lowStockThreshold || 5}</td>
-        <td>${getStatusBadge(item.status)}</td>
-      </tr>
-    `).join('');
+    let allStockData = data;
+    
+    function renderStockTable(filteredData) {
+      if (filteredData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading">No items match this filter.</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = filteredData.map(item => `
+        <tr>
+          <td>${item.name}</td>
+          <td>${item.quantity}</td>
+          <td>${item.lowStockThreshold || 5}</td>
+          <td>${getStatusBadge(item.status)}</td>
+          <td>${getRecommendedAction(item.status)}</td>
+        </tr>
+      `).join('');
+    }
+    
+    renderStockTable(allStockData);
+    
+    // Setup filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const filter = btn.dataset.filter;
+        let filtered = allStockData;
+        
+        if (filter === 'in-stock') {
+          filtered = allStockData.filter(i => i.status === 'In Stock');
+        } else if (filter === 'low-stock') {
+          filtered = allStockData.filter(i => i.status === 'Low Stock');
+        } else if (filter === 'out-of-stock') {
+          filtered = allStockData.filter(i => i.status === 'Out of Stock');
+        }
+        
+        renderStockTable(filtered);
+      });
+    });
   } catch (err) {
     console.error('Failed to load stock report:', err);
   }
@@ -244,13 +288,68 @@ async function init() {
 
   await Promise.all([
     loadSummary(),
+    loadInsights(),
     loadCategoryReport(),
     loadLocationReport(),
     loadStockReport(),
+    loadDataQuality(),
     loadRecentActivity(),
   ]);
 
   document.getElementById('export-csv')?.addEventListener('click', exportCSV);
+}
+
+async function loadInsights() {
+  try {
+    const data = await fetchReport('/insights');
+    const container = document.getElementById('insights-container');
+    
+    if (data.length === 0) {
+      container.innerHTML = '<div class="empty-state">No insights available at this time.</div>';
+      return;
+    }
+    
+    container.innerHTML = data.map(insight => `
+      <div class="insight-card ${insight.type}">
+        <div class="insight-icon">${insight.icon}</div>
+        <div class="insight-message">${insight.message}</div>
+      </div>
+    `).join('');
+  } catch (err) {
+    console.error('Failed to load insights:', err);
+  }
+}
+
+async function loadDataQuality() {
+  try {
+    const data = await fetchReport('/data-quality');
+    
+    renderQualityList('quality-no-category', data.itemsWithoutCategory);
+    renderQualityList('quality-no-location', data.itemsWithoutLocation);
+    renderQualityList('quality-no-value', data.itemsWithoutValue);
+    renderQualityList('quality-no-image', data.itemsWithoutImage);
+  } catch (err) {
+    console.error('Failed to load data quality:', err);
+  }
+}
+
+function renderQualityList(elementId, items) {
+  const container = document.getElementById(elementId);
+  
+  if (!items || items.length === 0) {
+    container.innerHTML = '<div class="empty-state">All items have this field.</div>';
+    return;
+  }
+  
+  container.innerHTML = items.map(item => `
+    <div class="quality-item">
+      <div class="quality-item-info">
+        <div class="quality-item-name">${item.name}</div>
+        <div class="quality-item-field">Missing: ${item.missingField}</div>
+      </div>
+      <a href="edit-item.html?id=${item.id}" class="button">Edit Item</a>
+    </div>
+  `).join('');
 }
 
 init();

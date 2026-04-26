@@ -35,13 +35,44 @@ export class ReportsService {
 
     const lowStockQuery = this.itemRepository
       .createQueryBuilder('item')
-      .where('item.quantity <= item.lowStockThreshold');
+      .where('item.quantity <= item.lowStockThreshold')
+      .andWhere('item.quantity > 0');
 
     if (role !== 'ADMIN') {
       lowStockQuery.andWhere('item.reporterId = :userId', { userId });
     }
 
     const lowStockCount = await lowStockQuery.getCount();
+
+    const outOfStockQuery = this.itemRepository
+      .createQueryBuilder('item')
+      .where('item.quantity = 0');
+
+    if (role !== 'ADMIN') {
+      outOfStockQuery.andWhere('item.reporterId = :userId', { userId });
+    }
+
+    const outOfStockCount = await outOfStockQuery.getCount();
+
+    const uncategorizedQuery = this.itemRepository
+      .createQueryBuilder('item')
+      .where('item.categoryId IS NULL');
+
+    if (role !== 'ADMIN') {
+      uncategorizedQuery.andWhere('item.reporterId = :userId', { userId });
+    }
+
+    const uncategorizedCount = await uncategorizedQuery.getCount();
+
+    const unassignedLocationQuery = this.itemRepository
+      .createQueryBuilder('item')
+      .where('item.locationId IS NULL');
+
+    if (role !== 'ADMIN') {
+      unassignedLocationQuery.andWhere('item.reporterId = :userId', { userId });
+    }
+
+    const unassignedLocationCount = await unassignedLocationQuery.getCount();
 
     const highestValueQuery = this.itemRepository
       .createQueryBuilder('item')
@@ -77,6 +108,9 @@ export class ReportsService {
       totalCategories,
       totalLocations,
       lowStockCount,
+      outOfStockCount,
+      uncategorizedCount,
+      unassignedLocationCount,
       highestValueItem: highestValueItem
         ? { name: highestValueItem.name, value: highestValueItem.value }
         : null,
@@ -214,5 +248,122 @@ export class ReportsService {
     ].join('\n');
 
     return csvContent;
+  }
+
+  async getInsights(userId: number, role: string) {
+    const summary = await this.getSummary(userId, role);
+    const categoryReport = await this.getCategoryReport(userId, role);
+    const insights: Array<{ type: string; icon: string; message: string }> = [];
+
+    // Most valuable category
+    if (categoryReport.length > 0) {
+      const topCategory = categoryReport.reduce((max, cat) => 
+        cat.totalValue > max.totalValue ? cat : max
+      );
+      insights.push({
+        type: 'info',
+        icon: '💰',
+        message: `${topCategory.categoryName} holds ₱${topCategory.totalValue.toFixed(2)} of inventory value.`,
+      });
+    }
+
+    // Low stock warning
+    if (summary.lowStockCount > 0) {
+      insights.push({
+        type: 'warning',
+        icon: '⚠️',
+        message: `${summary.lowStockCount} items are below their stock threshold.`,
+      });
+    }
+
+    // Out of stock warning
+    if (summary.outOfStockCount > 0) {
+      insights.push({
+        type: 'danger',
+        icon: '🚨',
+        message: `${summary.outOfStockCount} items are out of stock.`,
+      });
+    }
+
+    // Data quality warnings
+    if (summary.uncategorizedCount > 0) {
+      insights.push({
+        type: 'warning',
+        icon: '🏷️',
+        message: `${summary.uncategorizedCount} items have no category assigned.`,
+      });
+    }
+
+    if (summary.unassignedLocationCount > 0) {
+      insights.push({
+        type: 'warning',
+        icon: '📍',
+        message: `${summary.unassignedLocationCount} items have no location assigned.`,
+      });
+    }
+
+    // Inventory concentration
+    if (categoryReport.length > 0 && summary.totalValue > 0) {
+      const topCategoryValue = categoryReport[0].totalValue;
+      const concentration = (topCategoryValue / summary.totalValue) * 100;
+      if (concentration > 50) {
+        insights.push({
+          type: 'info',
+          icon: '📊',
+          message: `${concentration.toFixed(0)}% of your inventory value is concentrated in ${categoryReport[0].categoryName}.`,
+        });
+      }
+    }
+
+    return insights;
+  }
+
+  async getDataQuality(userId: number, role: string) {
+    const whereClause = role === 'ADMIN' ? {} : { reporterId: userId };
+
+    const itemsWithoutCategory = await this.itemRepository.find({
+      where: { ...whereClause, categoryId: null as any },
+      select: ['id', 'name'],
+    });
+
+    const itemsWithoutLocation = await this.itemRepository.find({
+      where: { ...whereClause, locationId: null as any },
+      select: ['id', 'name'],
+    });
+
+    const itemsWithoutValue = await this.itemRepository
+      .createQueryBuilder('item')
+      .select(['item.id', 'item.name'])
+      .where('(item.value IS NULL OR item.value = 0)');
+
+    if (role !== 'ADMIN') {
+      itemsWithoutValue.andWhere('item.reporterId = :userId', { userId });
+    }
+
+    const itemsWithoutValueResult = await itemsWithoutValue.getMany();
+
+    const itemsWithoutImage = await this.itemRepository
+      .createQueryBuilder('item')
+      .select(['item.id', 'item.name'])
+      .where('(item.imageUrl IS NULL OR item.imageUrl = "")');
+
+    if (role !== 'ADMIN') {
+      itemsWithoutImage.andWhere('item.reporterId = :userId', { userId });
+    }
+
+    const itemsWithoutImageResult = await itemsWithoutImage.getMany();
+
+    const itemsWithZeroQuantity = await this.itemRepository.find({
+      where: { ...whereClause, quantity: 0 },
+      select: ['id', 'name'],
+    });
+
+    return {
+      itemsWithoutCategory: itemsWithoutCategory.map(i => ({ id: i.id, name: i.name, missingField: 'Category' })),
+      itemsWithoutLocation: itemsWithoutLocation.map(i => ({ id: i.id, name: i.name, missingField: 'Location' })),
+      itemsWithoutValue: itemsWithoutValueResult.map(i => ({ id: i.id, name: i.name, missingField: 'Value' })),
+      itemsWithoutImage: itemsWithoutImageResult.map(i => ({ id: i.id, name: i.name, missingField: 'Image' })),
+      itemsWithZeroQuantity: itemsWithZeroQuantity.map(i => ({ id: i.id, name: i.name, missingField: 'Quantity (0)' })),
+    };
   }
 }

@@ -46,6 +46,22 @@ export class ReportsController {
     return this.reportsService.getRecentActivity(parseInt(userId), role);
   }
 
+  @Get('insights')
+  getInsights(
+    @Headers('x-user-id') userId: string,
+    @Headers('x-user-role') role: string,
+  ) {
+    return this.reportsService.getInsights(parseInt(userId), role);
+  }
+
+  @Get('data-quality')
+  getDataQuality(
+    @Headers('x-user-id') userId: string,
+    @Headers('x-user-role') role: string,
+  ) {
+    return this.reportsService.getDataQuality(parseInt(userId), role);
+  }
+
   @Get('export')
   async exportReport(
     @Query('format') format: string,
