@@ -1,0 +1,371 @@
+body[data-page="login"],
+body[data-page="register"] {
+  background:
+    radial-gradient(ellipse at 50% 104%, rgba(124,58,237,0.28), transparent 34rem),
+    radial-gradient(circle at 18% 28%, rgba(99,102,241,0.15), transparent 20rem),
+    radial-gradient(circle at 80% 38%, rgba(147,51,234,0.12), transparent 22rem),
+    #030308;
+}
+
+.auth-page {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  isolation: isolate;
+}
+
+.auth-page::before {
+  content: '';
+  position: fixed;
+  inset: auto 0 0;
+  height: 38vh;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 50% 92%, rgba(168,85,247,0.2), transparent 34rem),
+    linear-gradient(to bottom, transparent, rgba(91,33,182,0.18) 48%, rgba(0,0,0,0.76));
+  opacity: 0.9;
+}
+
+.auth-mascot-scene {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  perspective: 900px;
+  overflow: hidden;
+}
+
+.auth-mascot-scene::before,
+.auth-mascot-scene::after {
+  content: '';
+  position: absolute;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 999px;
+  background: #8b5cf6;
+  box-shadow: 0 0 18px #8b5cf6;
+}
+
+.auth-mascot-scene::before {
+  top: 29%;
+  left: 28%;
+}
+
+.auth-mascot-scene::after {
+  right: 11%;
+  bottom: 23%;
+}
+
+.auth-wrapper {
+  position: relative;
+  z-index: 10;
+}
+
+.auth-card {
+  position: relative;
+  z-index: 10;
+  background: linear-gradient(160deg, rgba(30,23,55,0.82), rgba(6,6,14,0.78));
+  border: 1px solid rgba(196,181,253,0.42);
+  box-shadow: 0 26px 80px rgba(0,0,0,0.55), 0 0 48px rgba(124,58,237,0.18);
+  backdrop-filter: blur(18px);
+}
+
+.mascot-box {
+  --eye-x: 0px;
+  --eye-y: 0px;
+  --tilt-x: 0deg;
+  --tilt-y: 0deg;
+  position: absolute;
+  width: var(--box-size, 8rem);
+  height: calc(var(--box-size, 8rem) * 0.94);
+  transform-style: preserve-3d;
+  transform: rotateX(var(--tilt-x)) rotateY(var(--tilt-y)) rotateZ(-1deg);
+  transition: transform 120ms ease-out;
+  animation: mascot-float 6s ease-in-out infinite;
+  filter: drop-shadow(0 24px 22px rgba(0,0,0,0.64));
+}
+
+.mascot-box::selection {
+  background: transparent;
+}
+
+.mascot-box::before,
+.mascot-box::after {
+  content: '';
+  position: absolute;
+  border: 1px solid rgba(196,181,253,0.26);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,0.16), 0 0 30px rgba(124,58,237,0.2);
+  pointer-events: none;
+}
+
+.mascot-box::before {
+  left: 0.18rem;
+  top: 0.1rem;
+  width: 77%;
+  height: 23%;
+  border-radius: 0.72rem 0.62rem 0.18rem 0.2rem;
+  background:
+    linear-gradient(90deg, transparent 40%, rgba(216,180,254,0.22) 40% 58%, transparent 58%),
+    linear-gradient(145deg, #4f2787 0%, #26133f 52%, #10091c 100%);
+  clip-path: polygon(0 22%, 72% 0, 100% 34%, 28% 100%);
+  transform: none;
+  transform-origin: bottom left;
+}
+
+.mascot-box::after {
+  right: 0.2rem;
+  top: 17%;
+  width: 25%;
+  height: 76%;
+  border-radius: 0.12rem 0.78rem 0.82rem 0.12rem;
+  background:
+    linear-gradient(180deg, rgba(168,85,247,0.18), transparent 30%),
+    linear-gradient(145deg, #21103c 0%, #0b0613 76%, #030208 100%);
+  clip-path: polygon(0 8%, 100% 0, 100% 86%, 0 100%);
+  transform: none;
+  transform-origin: top left;
+}
+
+.mascot-3::before,
+.mascot-4::before {
+  left: auto;
+  right: 0.18rem;
+  border-radius: 0.62rem 0.72rem 0.2rem 0.18rem;
+  clip-path: polygon(28% 0, 100% 22%, 72% 100%, 0 34%);
+  transform: none;
+  transform-origin: bottom right;
+}
+
+.mascot-3::after,
+.mascot-4::after {
+  left: 0.2rem;
+  right: auto;
+  border-radius: 0.75rem 0.1rem 0.1rem 0.82rem;
+  background:
+    linear-gradient(180deg, rgba(168,85,247,0.2), transparent 30%),
+    linear-gradient(215deg, #251144 0%, #0b0613 76%, #030208 100%);
+  clip-path: polygon(0 0, 100% 8%, 100% 100%, 0 86%);
+  transform: none;
+  transform-origin: top right;
+}
+
+.box-face {
+  position: absolute;
+  left: 0;
+  top: 17%;
+  width: 77%;
+  height: 76%;
+  z-index: 1;
+  border-radius: 0.22rem 0.18rem 0.85rem 0.72rem;
+  background:
+    linear-gradient(90deg, transparent 40%, rgba(216,180,254,0.16) 40% 58%, transparent 58%),
+    radial-gradient(circle at 58% 45%, rgba(168,85,247,0.22), transparent 24%),
+    linear-gradient(145deg, #3c1f66 0%, #170b2b 52%, #05030b 100%);
+  border: 1px solid rgba(216,180,254,0.34);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset -18px -20px 28px rgba(0,0,0,0.42),
+    inset 12px 10px 18px rgba(124,58,237,0.14),
+    0 0 34px rgba(124,58,237,0.28);
+  clip-path: polygon(0 0, 100% 8%, 100% 100%, 0 92%);
+  transform: translateZ(1.2rem);
+}
+
+.mascot-3 .box-face,
+.mascot-4 .box-face {
+  left: auto;
+  right: 0;
+  border-radius: 0.16rem 0.16rem 0.72rem 0.85rem;
+  background:
+    linear-gradient(90deg, transparent 42%, rgba(196,181,253,0.18) 42% 59%, transparent 59%),
+    radial-gradient(circle at 44% 45%, rgba(168,85,247,0.22), transparent 24%),
+    linear-gradient(215deg, #3c1f66 0%, #170b2b 52%, #05030b 100%);
+  clip-path: polygon(0 8%, 100% 0, 100% 92%, 0 100%);
+}
+
+.box-face::before {
+  content: '';
+  position: absolute;
+  left: 0.65rem;
+  bottom: 0.75rem;
+  width: 1.55rem;
+  height: 1.05rem;
+  border-radius: 0.18rem;
+  background:
+    linear-gradient(rgba(196,181,253,0.16), rgba(196,181,253,0.16)) 0.22rem 0.18rem / 0.42rem 0.42rem no-repeat,
+    repeating-linear-gradient(90deg, rgba(196,181,253,0.2) 0 0.11rem, transparent 0.11rem 0.22rem);
+  border: 1px solid rgba(196,181,253,0.16);
+  opacity: 0.78;
+}
+
+.box-face::after {
+  content: '';
+  position: absolute;
+  left: 41%;
+  top: -0.2rem;
+  width: 17%;
+  height: 102%;
+  background: linear-gradient(180deg, rgba(216,180,254,0.22), rgba(124,58,237,0.08));
+  border-left: 1px solid rgba(216,180,254,0.16);
+  border-right: 1px solid rgba(20,10,38,0.36);
+  opacity: 0.78;
+}
+
+.mascot-box .box-face {
+  overflow: hidden;
+}
+
+.mascot-box .box-face > .eye,
+.mascot-box .box-face > .smile {
+  z-index: 2;
+}
+
+.smile {
+  position: absolute;
+  left: 50%;
+  top: 65%;
+  width: 1rem;
+  height: 0.38rem;
+  border-bottom: 2px solid rgba(167,139,250,0.32);
+  border-radius: 50%;
+  transform: translateX(-50%);
+}
+
+.smile::before,
+.smile::after {
+  content: '';
+  position: absolute;
+  top: -2.25rem;
+  width: 0.9rem;
+  height: 0.35rem;
+  border-top: 2px solid rgba(168,85,247,0.72);
+  border-radius: 999px 999px 0 0;
+  filter: drop-shadow(0 0 6px rgba(168,85,247,0.6));
+}
+
+.smile::before {
+  left: -1.85rem;
+  transform: rotate(-13deg);
+}
+
+.smile::after {
+  right: -1.85rem;
+  transform: rotate(13deg);
+}
+
+.eye {
+  position: absolute;
+  top: 37%;
+  width: 1.28rem;
+  height: 1.46rem;
+  border-radius: 999px;
+  background: radial-gradient(circle at 38% 32%, #ffffff 0 18%, #f4eaff 48%, #d6b4ff 100%);
+  box-shadow: 0 0 10px #fff, 0 0 22px #a855f7, 0 0 42px rgba(168,85,247,0.9);
+  transform: translate(calc(var(--eye-x) * 0.25), calc(var(--eye-y) * 0.22));
+  transition: height 80ms ease, transform 90ms ease-out;
+  overflow: hidden;
+}
+
+.left-eye {
+  left: 33%;
+}
+
+.right-eye {
+  right: 21%;
+}
+
+.eye::after {
+  content: '';
+  position: absolute;
+  left: 45%;
+  top: 42%;
+  width: 0.58rem;
+  height: 0.72rem;
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 28%, rgba(255,255,255,0.9) 0 13%, #180920 14% 100%);
+  transform: translate(calc(var(--eye-x) * 0.72), calc(var(--eye-y) * 0.62));
+  transition: transform 90ms ease-out;
+}
+
+.is-blinking .eye {
+  height: 0.08rem;
+  box-shadow: 0 0 8px rgba(248,244,255,0.8), 0 0 16px rgba(168,85,247,0.58);
+}
+
+.is-blinking .eye::after {
+  opacity: 0;
+}
+
+.mascot-1 {
+  --box-size: 11rem;
+  left: 6%;
+  bottom: 5%;
+  animation-delay: -1.4s;
+}
+
+.mascot-2 {
+  --box-size: 7.2rem;
+  left: 15%;
+  top: 40%;
+  opacity: 0.86;
+  animation-delay: -3s;
+}
+
+.mascot-3 {
+  --box-size: 10rem;
+  right: 5%;
+  bottom: 5%;
+  animation-delay: -2.2s;
+}
+
+.mascot-4 {
+  --box-size: 7.6rem;
+  right: 10%;
+  top: 39%;
+  opacity: 0.84;
+  animation-delay: -4s;
+}
+
+@keyframes mascot-float {
+  0%, 100% { margin-top: 0; }
+  50% { margin-top: -0.8rem; }
+}
+
+@media (max-width: 720px), (pointer: coarse) {
+  .auth-wrapper {
+    max-width: 100%;
+  }
+
+  .mascot-1 {
+    --box-size: 5.6rem;
+    left: -1.4rem;
+    bottom: 1rem;
+  }
+
+  .mascot-3 {
+    --box-size: 5.2rem;
+    right: -1rem;
+    top: 4.25rem;
+  }
+
+  .mascot-2,
+  .mascot-4 {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-box {
+    animation: none;
+    transition: none;
+  }
+
+  .eye {
+    transition: none;
+  }
+}

@@ -96,6 +96,10 @@ export function redirectToDashboard(user) {
 // Page initialization
 const page = document.body.dataset.page;
 if (page === 'login') {
+  import('./auth-mascots.js').then(({ initAuthMascots }) => {
+    const cleanupMascots = initAuthMascots();
+    window.addEventListener('beforeunload', cleanupMascots, { once: true });
+  });
   attachAuthActions();
   const form = document.getElementById('login-form');
   const status = document.getElementById('form-status');
@@ -117,6 +121,10 @@ if (page === 'login') {
 }
 
 if (page === 'register') {
+  import('./auth-mascots.js').then(({ initAuthMascots }) => {
+    const cleanupMascots = initAuthMascots();
+    window.addEventListener('beforeunload', cleanupMascots, { once: true });
+  });
   attachAuthActions();
   const form = document.getElementById('register-form');
   const status = document.getElementById('form-status');
