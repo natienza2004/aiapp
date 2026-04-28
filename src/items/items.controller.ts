@@ -95,12 +95,33 @@ export class ItemsController {
       }
     }
 
-    const dto: UpdateItemDto = {
-      ...updateItemDto,
-      ...(file ? { imageUrl: `/uploads/${file.filename}` } : {}),
-    };
+    // Transform numeric fields from FormData strings
+    const dto: UpdateItemDto = {};
+    
+    if (updateItemDto.name !== undefined && updateItemDto.name !== '') dto.name = updateItemDto.name;
+    if (updateItemDto.description !== undefined && updateItemDto.description !== '') dto.description = updateItemDto.description;
+    if (updateItemDto.category !== undefined && updateItemDto.category !== '') dto.category = updateItemDto.category;
+    if (updateItemDto.location !== undefined && updateItemDto.location !== '') dto.location = updateItemDto.location;
+    if (updateItemDto.categoryId !== undefined && updateItemDto.categoryId !== null) {
+      dto.categoryId = Number(updateItemDto.categoryId);
+    }
+    if (updateItemDto.locationId !== undefined && updateItemDto.locationId !== null) {
+      dto.locationId = Number(updateItemDto.locationId);
+    }
+    if (updateItemDto.quantity !== undefined && updateItemDto.quantity !== null) {
+      dto.quantity = Number(updateItemDto.quantity);
+    }
+    if (updateItemDto.value !== undefined && updateItemDto.value !== null) {
+      dto.value = Number(updateItemDto.value);
+    }
+    if (updateItemDto.lowStockThreshold !== undefined && updateItemDto.lowStockThreshold !== null) {
+      dto.lowStockThreshold = Number(updateItemDto.lowStockThreshold);
+    }
+    if (file) {
+      dto.imageUrl = `/uploads/${file.filename}`;
+    }
 
-    return this.itemsService.update(id, dto);
+    return this.itemsService.update(id, dto, userId);
   }
 
   @Delete(':id')
@@ -123,7 +144,7 @@ export class ItemsController {
       }
     }
 
-    return this.itemsService.remove(id);
+    return this.itemsService.remove(id, userId);
   }
 }
 

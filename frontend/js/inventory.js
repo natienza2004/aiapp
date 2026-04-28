@@ -47,7 +47,7 @@ function renderItems(items, user, tbody) {
           <td>${locationName}</td>
           <td>${formatDate(item.createdAt)}</td>
           <td class="actions">
-            ${canManage ? `<a class="button" href="edit-item.html?id=${item.id}">Edit</a><button class="button delete-btn" data-id="${item.id}">Delete</button>` : ''}
+            ${canManage ? `<a class="button" href="item-details.html?id=${item.id}">View</a><a class="button" href="edit-item.html?id=${item.id}">Edit</a><button class="button delete-btn" data-id="${item.id}">Delete</button>` : `<a class="button" href="item-details.html?id=${item.id}">View</a>`}
           </td>
         </tr>`;
     })

@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>InvenTrack — Item Details</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body data-page="item-details">
+  <div class="app-layout">
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-icon">📦</div>
+        <div>
+          <span>InvenTrack</span>
+          <small>Inventory System</small>
+        </div>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="nav-label">Menu</div>
+        <a class="nav-link" href="dashboard.html">
+          <span class="nav-icon">🗂️</span> My Inventory
+        </a>
+        <a class="nav-link" href="add-item.html">
+          <span class="nav-icon">➕</span> Add Item
+        </a>
+        <a class="nav-link" href="reports.html">
+          <span class="nav-icon">📊</span> Reports
+        </a>
+        <div class="nav-label" style="margin-top:0.5rem;">Account</div>
+        <a class="nav-link" href="profile.html">
+          <span class="nav-icon">👤</span> Profile
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-chip">
+          <div class="user-avatar" id="sidebar-avatar">?</div>
+          <div class="user-info">
+            <div class="user-name" id="sidebar-name">Loading…</div>
+            <div class="user-role" id="sidebar-role">—</div>
+          </div>
+        </div>
+        <button id="logout" class="button danger" style="width:100%;margin-top:0.5rem;">Sign out</button>
+      </div>
+    </aside>
+
+    <div class="page-content">
+      <div class="topbar">
+        <div>
+          <div class="topbar-title" id="item-name">Item Details</div>
+          <div class="topbar-sub">View item information and history</div>
+        </div>
+        <div class="topbar-actions">
+          <a class="button" href="dashboard.html">← Back</a>
+          <a class="button primary" id="edit-item-btn" href="#">Edit Item</a>
+        </div>
+      </div>
+
+      <div class="main-inner">
+        <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;">
+          <!-- Item Details -->
+          <div>
+            <div class="section-card" style="margin-bottom:1.5rem;">
+              <div class="section-card-header">
+                <h2>📦 Item Information</h2>
+              </div>
+              <div style="padding:1.5rem;">
+                <div id="item-details-content">Loading...</div>
+              </div>
+            </div>
+
+            <!-- History Timeline -->
+            <div class="section-card">
+              <div class="section-card-header">
+                <h2>📜 History Timeline</h2>
+              </div>
+              <div class="timeline-container" id="history-timeline">
+                <div class="loading-state">Loading history...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar Info -->
+          <div>
+            <div class="section-card">
+              <div class="section-card-header">
+                <h2>ℹ️ Quick Info</h2>
+              </div>
+              <div style="padding:1.5rem;">
+                <div id="quick-info">Loading...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="js/item-details.js"></script>
+</body>
+</html>

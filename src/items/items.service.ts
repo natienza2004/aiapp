@@ -6,6 +6,7 @@ import { CreateItemDto } from './dto/create-item.dto';
 import { UpdateItemDto } from './dto/update-item.dto';
 import { Category } from '../categories/category.entity';
 import { Location } from '../locations/location.entity';
+import { ItemHistoryService } from '../item-history/item-history.service';
 
 @Injectable()
 export class ItemsService {
@@ -16,7 +17,32 @@ export class ItemsService {
     private readonly categoryRepository: Repository<Category>,
     @InjectRepository(Location)
     private readonly locationRepository: Repository<Location>,
+    private readonly historyService: ItemHistoryService,
   ) {}
+
+  private async getOrCreateCategoryId(categoryName: string): Promise<number | undefined> {
+    const name = categoryName.trim();
+    if (!name) return undefined;
+
+    let categoryEntity = await this.categoryRepository.findOne({ where: { name } });
+    if (!categoryEntity) {
+      categoryEntity = await this.categoryRepository.save({ name });
+    }
+
+    return categoryEntity.id;
+  }
+
+  private async getOrCreateLocationId(locationName: string): Promise<number | undefined> {
+    const name = locationName.trim();
+    if (!name) return undefined;
+
+    let locationEntity = await this.locationRepository.findOne({ where: { name } });
+    if (!locationEntity) {
+      locationEntity = await this.locationRepository.save({ name });
+    }
+
+    return locationEntity.id;
+  }
 
   findAll(): Promise<Item[]> {
     return this.itemRepository.find({ 
@@ -45,58 +71,98 @@ export class ItemsService {
   }
 
   async create(createItemDto: CreateItemDto): Promise<Item> {
-    const { category, location, ...itemData } = createItemDto;
+    const itemData: any = { ...createItemDto };
     
     // Handle string category - find or create
-    if (category && typeof category === 'string') {
-      let categoryEntity = await this.categoryRepository.findOne({ where: { name: category } });
-      if (!categoryEntity) {
-        categoryEntity = await this.categoryRepository.save({ name: category });
-      }
-      itemData.categoryId = categoryEntity.id;
+    if (createItemDto.category && typeof createItemDto.category === 'string') {
+      itemData.categoryId = await this.getOrCreateCategoryId(createItemDto.category);
+      delete itemData.category;
     }
     
     // Handle string location - find or create
-    if (location && typeof location === 'string') {
-      let locationEntity = await this.locationRepository.findOne({ where: { name: location } });
-      if (!locationEntity) {
-        locationEntity = await this.locationRepository.save({ name: location });
-      }
-      itemData.locationId = locationEntity.id;
+    if (createItemDto.location && typeof createItemDto.location === 'string') {
+      itemData.locationId = await this.getOrCreateLocationId(createItemDto.location);
+      delete itemData.location;
     }
     
-    const item = this.itemRepository.create(itemData);
-    return this.itemRepository.save(item);
+    const item = this.itemRepository.create(itemData) as unknown as Item;
+    const savedItem = await this.itemRepository.save(item) as unknown as Item;
+    
+    // Log creation
+    if (savedItem.reporterId) {
+      try {
+        await this.historyService.logItemCreated(savedItem.id, savedItem.reporterId);
+      } catch (err) {
+        console.error('Failed to log item creation:', err);
+      }
+    }
+    
+    // Return with relations
+    return this.findOne(savedItem.id);
   }
 
-  async update(id: number, updateItemDto: UpdateItemDto): Promise<Item> {
+  async update(id: number, updateItemDto: UpdateItemDto, userId?: number): Promise<Item> {
     const item = await this.findOne(id);
-    const { category, location, ...updateData } = updateItemDto;
+    const oldItem = { ...item };
+    let categoryChanged = false;
+    let locationChanged = false;
     
-    // Handle string category - find or create
-    if (category && typeof category === 'string') {
-      let categoryEntity = await this.categoryRepository.findOne({ where: { name: category } });
-      if (!categoryEntity) {
-        categoryEntity = await this.categoryRepository.save({ name: category });
+    if (updateItemDto.categoryId !== undefined) {
+      item.categoryId = updateItemDto.categoryId;
+      categoryChanged = true;
+    } else if (updateItemDto.category !== undefined && typeof updateItemDto.category === 'string') {
+      const categoryId = await this.getOrCreateCategoryId(updateItemDto.category);
+      if (categoryId !== undefined) {
+        item.categoryId = categoryId;
+        categoryChanged = true;
       }
-      updateData.categoryId = categoryEntity.id;
     }
     
-    // Handle string location - find or create
-    if (location && typeof location === 'string') {
-      let locationEntity = await this.locationRepository.findOne({ where: { name: location } });
-      if (!locationEntity) {
-        locationEntity = await this.locationRepository.save({ name: location });
+    if (updateItemDto.locationId !== undefined) {
+      item.locationId = updateItemDto.locationId;
+      locationChanged = true;
+    } else if (updateItemDto.location !== undefined && typeof updateItemDto.location === 'string') {
+      const locationId = await this.getOrCreateLocationId(updateItemDto.location);
+      if (locationId !== undefined) {
+        item.locationId = locationId;
+        locationChanged = true;
       }
-      updateData.locationId = locationEntity.id;
     }
     
-    Object.assign(item, updateData);
-    return this.itemRepository.save(item);
+    // Update other fields
+    if (updateItemDto.name !== undefined) item.name = updateItemDto.name;
+    if (updateItemDto.description !== undefined) item.description = updateItemDto.description;
+    if (updateItemDto.quantity !== undefined) item.quantity = updateItemDto.quantity;
+    if (updateItemDto.value !== undefined) item.value = updateItemDto.value;
+    if (updateItemDto.imageUrl !== undefined) item.imageUrl = updateItemDto.imageUrl;
+    if (updateItemDto.lowStockThreshold !== undefined) item.lowStockThreshold = updateItemDto.lowStockThreshold;
+
+    if (categoryChanged) item.category = undefined;
+    if (locationChanged) item.location = undefined;
+    
+    await this.itemRepository.save(item);
+    const savedItem = await this.findOne(id);
+    
+    // Log update (non-blocking)
+    if (userId) {
+      try {
+        await this.historyService.logItemUpdated(id, userId, oldItem, savedItem);
+      } catch (err) {
+        console.error('Failed to log item update:', err);
+      }
+    }
+    
+    return savedItem;
   }
 
-  async remove(id: number): Promise<void> {
+  async remove(id: number, userId?: number): Promise<void> {
     const item = await this.findOne(id);
+    
+    // Log deletion
+    if (userId) {
+      await this.historyService.logItemDeleted(id, userId);
+    }
+    
     await this.itemRepository.remove(item);
   }
 

@@ -8,10 +8,12 @@ import { ItemsService } from './items.service';
 import { Item } from './item.entity';
 import { Category } from '../categories/category.entity';
 import { Location } from '../locations/location.entity';
+import { ItemHistoryModule } from '../item-history/item-history.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Item, Category, Location]),
+    ItemHistoryModule,
     MulterModule.register({
       storage: diskStorage({
         destination: './uploads',

@@ -5,6 +5,7 @@ import { Item } from '../items/item.entity';
 import { Category } from '../categories/category.entity';
 import { Location } from '../locations/location.entity';
 import { Reminder } from '../reminders/reminder.entity';
+import { ItemHistory } from '../item-history/item-history.entity';
 
 @Injectable()
 export class DashboardService {
@@ -17,6 +18,8 @@ export class DashboardService {
     private readonly locationRepository: Repository<Location>,
     @InjectRepository(Reminder)
     private readonly reminderRepository: Repository<Reminder>,
+    @InjectRepository(ItemHistory)
+    private readonly historyRepository: Repository<ItemHistory>,
   ) {}
 
   async getSummary(userId: number, role: string) {
@@ -35,8 +38,31 @@ export class DashboardService {
     
     const valueResult = await valueQuery.getRawOne();
     
-    const totalCategories = await this.categoryRepository.count();
-    const totalLocations = await this.locationRepository.count();
+    // Fix: Count only distinct categories used by active items
+    const categoryQuery = this.itemRepository
+      .createQueryBuilder('item')
+      .select('COUNT(DISTINCT item.categoryId)', 'count')
+      .where('item.categoryId IS NOT NULL');
+    
+    if (role !== 'ADMIN') {
+      categoryQuery.andWhere('item.reporterId = :userId', { userId });
+    }
+    
+    const categoryResult = await categoryQuery.getRawOne();
+    const totalCategories = parseInt(categoryResult?.count || '0');
+    
+    // Fix: Count only distinct locations used by active items
+    const locationQuery = this.itemRepository
+      .createQueryBuilder('item')
+      .select('COUNT(DISTINCT item.locationId)', 'count')
+      .where('item.locationId IS NOT NULL');
+    
+    if (role !== 'ADMIN') {
+      locationQuery.andWhere('item.reporterId = :userId', { userId });
+    }
+    
+    const locationResult = await locationQuery.getRawOne();
+    const totalLocations = parseInt(locationResult?.count || '0');
 
     const startOfMonth = new Date();
     startOfMonth.setDate(1);
@@ -68,7 +94,7 @@ export class DashboardService {
     return this.itemRepository.find({
       where: whereClause,
       relations: ['category', 'location', 'reporter'],
-      order: { createdAt: 'DESC' },
+      order: { updatedAt: 'DESC', createdAt: 'DESC' },
       take: limit,
     });
   }
@@ -149,5 +175,66 @@ export class DashboardService {
       category: r.categoryName || 'Uncategorized',
       value: parseFloat(r.totalValue || '0'),
     }));
+  }
+
+  async getRecentActivity(userId: number, role: string, limit: number = 10) {
+    const query = this.historyRepository
+      .createQueryBuilder('history')
+      .leftJoinAndSelect('history.item', 'item')
+      .leftJoinAndSelect('history.user', 'user')
+      .orderBy('history.createdAt', 'DESC')
+      .limit(limit);
+    
+    if (role !== 'ADMIN') {
+      query.where('history.userId = :userId', { userId });
+    }
+    
+    return query.getMany();
+  }
+
+  async getDebugCounts(userId: number, role: string) {
+    const totalLocationRecords = await this.locationRepository.count();
+    
+    const usedLocationQuery = this.itemRepository
+      .createQueryBuilder('item')
+      .select('COUNT(DISTINCT item.locationId)', 'count')
+      .where('item.locationId IS NOT NULL');
+    
+    if (role !== 'ADMIN') {
+      usedLocationQuery.andWhere('item.reporterId = :userId', { userId });
+    }
+    
+    const usedLocationResult = await usedLocationQuery.getRawOne();
+    const usedLocationCount = parseInt(usedLocationResult?.count || '0');
+    
+    const itemsWithoutLocationQuery = this.itemRepository
+      .createQueryBuilder('item')
+      .where('item.locationId IS NULL');
+    
+    if (role !== 'ADMIN') {
+      itemsWithoutLocationQuery.andWhere('item.reporterId = :userId', { userId });
+    }
+    
+    const itemsWithoutLocation = await itemsWithoutLocationQuery.getCount();
+    
+    const distinctLocationsQuery = this.itemRepository
+      .createQueryBuilder('item')
+      .leftJoin('item.location', 'location')
+      .select('DISTINCT location.name', 'name')
+      .where('item.locationId IS NOT NULL');
+    
+    if (role !== 'ADMIN') {
+      distinctLocationsQuery.andWhere('item.reporterId = :userId', { userId });
+    }
+    
+    const distinctLocations = await distinctLocationsQuery.getRawMany();
+    
+    return {
+      totalLocationRecords,
+      usedLocationCount,
+      unusedLocationCount: totalLocationRecords - usedLocationCount,
+      itemsWithoutLocation,
+      distinctUsedLocations: distinctLocations.map(l => l.name).filter(Boolean),
+    };
   }
 }

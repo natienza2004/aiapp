@@ -34,4 +34,14 @@ export class DashboardController {
   getValueByCategory(@Headers('x-user-id') userId: string, @Headers('x-user-role') role: string) {
     return this.dashboardService.getValueByCategory(parseInt(userId), role);
   }
+
+  @Get('recent-activity')
+  getRecentActivity(@Headers('x-user-id') userId: string, @Headers('x-user-role') role: string, @Query('limit') limit?: string) {
+    return this.dashboardService.getRecentActivity(parseInt(userId), role, limit ? parseInt(limit) : 10);
+  }
+
+  @Get('debug-counts')
+  getDebugCounts(@Headers('x-user-id') userId: string, @Headers('x-user-role') role: string) {
+    return this.dashboardService.getDebugCounts(parseInt(userId), role);
+  }
 }

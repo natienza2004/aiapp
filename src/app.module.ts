@@ -19,6 +19,8 @@ import { Reminder } from './reminders/reminder.entity';
 import { RemindersModule } from './reminders/reminders.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { ReportsModule } from './reports/reports.module';
+import { ItemHistoryModule } from './item-history/item-history.module';
+import { ItemHistory } from './item-history/item-history.entity';
 
 @Module({
   imports: [
@@ -42,7 +44,7 @@ import { ReportsModule } from './reports/reports.module';
       username: process.env.DB_USER ?? 'root',
       password: process.env.DB_PASS ?? '',
       database: process.env.DB_NAME ?? 'inventory_db',
-      entities: [Item, User, Category, Location, Reminder],
+      entities: [Item, User, Category, Location, Reminder, ItemHistory],
       synchronize: true,
     }),
     ItemsModule,
@@ -52,6 +54,7 @@ import { ReportsModule } from './reports/reports.module';
     RemindersModule,
     DashboardModule,
     ReportsModule,
+    ItemHistoryModule,
   ],
   controllers: [AppController],
   providers: [AppService],
