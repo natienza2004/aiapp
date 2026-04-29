@@ -8,6 +8,30 @@ import { Category } from '../categories/category.entity';
 import { Location } from '../locations/location.entity';
 import { ItemHistoryService } from '../item-history/item-history.service';
 
+export type ItemSortBy =
+  | 'name'
+  | 'quantity'
+  | 'value'
+  | 'createdAt'
+  | 'updatedAt'
+  | 'category'
+  | 'location';
+
+export interface ItemSortOptions {
+  sortBy?: string;
+  sortOrder?: string;
+}
+
+const SORT_COLUMNS: Record<ItemSortBy, string> = {
+  name: 'item.name',
+  quantity: 'item.quantity',
+  value: 'item.value',
+  createdAt: 'item.createdAt',
+  updatedAt: 'item.updatedAt',
+  category: 'category.name',
+  location: 'location.name',
+};
+
 @Injectable()
 export class ItemsService {
   constructor(
@@ -44,19 +68,61 @@ export class ItemsService {
     return locationEntity.id;
   }
 
-  findAll(): Promise<Item[]> {
-    return this.itemRepository.find({ 
-      relations: ['reporter', 'category', 'location'], 
-      order: { createdAt: 'DESC' } 
-    });
+  private getSort(sortOptions?: ItemSortOptions): { column: string; direction: 'ASC' | 'DESC' } | null {
+    const sortBy = sortOptions?.sortBy as ItemSortBy | undefined;
+    if (!sortBy || !SORT_COLUMNS[sortBy]) return null;
+
+    return {
+      column: SORT_COLUMNS[sortBy],
+      direction: sortOptions?.sortOrder?.toLowerCase() === 'desc' ? 'DESC' : 'ASC',
+    };
   }
 
-  findAllForUser(userId: number): Promise<Item[]> {
-    return this.itemRepository.find({
-      relations: ['reporter', 'category', 'location'],
-      where: { reporterId: userId },
-      order: { createdAt: 'DESC' },
-    });
+  private applySort(queryBuilder: ReturnType<Repository<Item>['createQueryBuilder']>, sortOptions?: ItemSortOptions) {
+    const sort = this.getSort(sortOptions);
+    if (!sort) {
+      return queryBuilder.orderBy('item.createdAt', 'DESC');
+    }
+
+    return queryBuilder
+      .orderBy(`${sort.column} IS NULL`, 'ASC')
+      .addOrderBy(sort.column, sort.direction);
+  }
+
+  findAll(sortOptions?: ItemSortOptions): Promise<Item[]> {
+    if (!this.getSort(sortOptions)) {
+      return this.itemRepository.find({ 
+        relations: ['reporter', 'category', 'location'], 
+        order: { createdAt: 'DESC' } 
+      });
+    }
+
+    const queryBuilder = this.itemRepository
+      .createQueryBuilder('item')
+      .leftJoinAndSelect('item.reporter', 'reporter')
+      .leftJoinAndSelect('item.category', 'category')
+      .leftJoinAndSelect('item.location', 'location');
+
+    return this.applySort(queryBuilder, sortOptions).getMany();
+  }
+
+  findAllForUser(userId: number, sortOptions?: ItemSortOptions): Promise<Item[]> {
+    if (!this.getSort(sortOptions)) {
+      return this.itemRepository.find({
+        relations: ['reporter', 'category', 'location'],
+        where: { reporterId: userId },
+        order: { createdAt: 'DESC' },
+      });
+    }
+
+    const queryBuilder = this.itemRepository
+      .createQueryBuilder('item')
+      .leftJoinAndSelect('item.reporter', 'reporter')
+      .leftJoinAndSelect('item.category', 'category')
+      .leftJoinAndSelect('item.location', 'location')
+      .where('item.reporterId = :userId', { userId });
+
+    return this.applySort(queryBuilder, sortOptions).getMany();
   }
 
   async findOne(id: number): Promise<Item> {
@@ -166,7 +232,7 @@ export class ItemsService {
     await this.itemRepository.remove(item);
   }
 
-  async search(query: string, userId: number, role: string): Promise<Item[]> {
+  async search(query: string, userId: number, role: string, sortOptions?: ItemSortOptions): Promise<Item[]> {
     if (!query || query.trim().length < 2) {
       return [];
     }
@@ -186,6 +252,6 @@ export class ItemsService {
       queryBuilder.andWhere('item.reporterId = :userId', { userId });
     }
 
-    return queryBuilder.orderBy('item.createdAt', 'DESC').getMany();
+    return this.applySort(queryBuilder, sortOptions).getMany();
   }
 }

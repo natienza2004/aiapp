@@ -26,24 +26,29 @@ export class ItemsController {
   findAll(
     @Headers('x-user-role') role: string,
     @Headers('x-user-id') userIdHeader: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
   ) {
     const roleNormalized = (role || '').toUpperCase();
     const userId = Number(userIdHeader);
+    const sortOptions = { sortBy, sortOrder };
     if (roleNormalized === 'STUDENT' && Number.isFinite(userId)) {
-      return this.itemsService.findAllForUser(userId);
+      return this.itemsService.findAllForUser(userId, sortOptions);
     }
-    return this.itemsService.findAll();
+    return this.itemsService.findAll(sortOptions);
   }
 
   @Get('search')
   search(
     @Query('query') query: string,
+    @Query('sortBy') sortBy: string,
+    @Query('sortOrder') sortOrder: string,
     @Headers('x-user-role') role: string,
     @Headers('x-user-id') userIdHeader: string,
   ) {
     const roleNormalized = (role || '').toUpperCase();
     const userId = Number(userIdHeader);
-    return this.itemsService.search(query, userId, roleNormalized);
+    return this.itemsService.search(query, userId, roleNormalized, { sortBy, sortOrder });
   }
 
   @Get(':id')

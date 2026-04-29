@@ -623,6 +623,22 @@ body[data-page="register"] {
   white-space: nowrap;
 }
 
+.inventory-table th[data-sort-key] {
+  cursor: pointer;
+  user-select: none;
+}
+
+.inventory-table th[data-sort-key].active-sort {
+  color: var(--text);
+}
+
+.sort-icon {
+  display: inline-block;
+  min-width: 0.75rem;
+  margin-left: 0.25rem;
+  color: var(--primary);
+}
+
 .inventory-table td {
   padding: 0.85rem 1.25rem;
   border-bottom: 1px solid var(--border);

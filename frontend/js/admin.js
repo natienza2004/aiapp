@@ -13,6 +13,69 @@ let allItems = [];
 let allUsers = [];
 let currentPage = 1;
 const itemsPerPage = 10;
+const DEFAULT_SORT = { sortBy: 'updatedAt', sortOrder: 'desc' };
+const sortState = { ...DEFAULT_SORT };
+
+function getSortParams() {
+  return { sortBy: sortState.sortBy, sortOrder: sortState.sortOrder };
+}
+
+function getVisibleInventoryItems() {
+  const searchInput = document.getElementById('search-inventory');
+  const query = searchInput ? searchInput.value.toLowerCase().trim() : '';
+  if (!query) return allItems;
+
+  return allItems.filter(item =>
+    item.name.toLowerCase().includes(query) ||
+    (item.category?.name || '').toLowerCase().includes(query) ||
+    (item.reporter?.name || '').toLowerCase().includes(query)
+  );
+}
+
+function renderInventoryView({ keepPage = true } = {}) {
+  const visibleItems = getVisibleInventoryItems();
+  const totalPages = Math.max(1, Math.ceil(visibleItems.length / itemsPerPage));
+  if (!keepPage || currentPage > totalPages) currentPage = 1;
+  renderInventoryTable(visibleItems, currentPage);
+  renderPagination(visibleItems);
+}
+
+function updateSortHeaders() {
+  document.querySelectorAll('[data-sort-key]').forEach((header) => {
+    const icon = header.querySelector('.sort-icon');
+    const isActive = header.dataset.sortKey === sortState.sortBy;
+    header.classList.toggle('active-sort', isActive);
+    if (icon) icon.textContent = isActive ? (sortState.sortOrder === 'asc' ? '\u2191' : '\u2193') : '';
+  });
+}
+
+function setupInventorySorting() {
+  document.querySelectorAll('[data-sort-key]').forEach((header) => {
+    header.addEventListener('click', async () => {
+      const sortBy = header.dataset.sortKey;
+      if (!sortBy) return;
+
+      if (sortState.sortBy !== sortBy) {
+        sortState.sortBy = sortBy;
+        sortState.sortOrder = 'asc';
+      } else if (sortState.sortOrder === 'asc') {
+        sortState.sortOrder = 'desc';
+      } else {
+        sortState.sortBy = DEFAULT_SORT.sortBy;
+        sortState.sortOrder = DEFAULT_SORT.sortOrder;
+      }
+
+      updateSortHeaders();
+      try {
+        allItems = await getItems(getSortParams());
+        renderInventoryView({ keepPage: true });
+      } catch (err) {
+        showNotification('Failed to sort inventory: ' + err.message, 'error');
+      }
+    });
+  });
+  updateSortHeaders();
+}
 
 function setupTabs() {
   const tabBtns = document.querySelectorAll('.tab-btn');
@@ -185,8 +248,7 @@ function renderInventoryTable(items, page = 1) {
       try {
         await deleteItem(id);
         allItems = allItems.filter(i => i.id !== id);
-        renderInventoryTable(allItems, currentPage);
-        renderPagination(allItems);
+        renderInventoryView({ keepPage: true });
       } catch (err) {
         alert(err.message);
       }
@@ -254,24 +316,8 @@ function setupSearch() {
   if (!searchInput) return;
   
   searchInput.addEventListener('input', (e) => {
-    const query = e.target.value.toLowerCase().trim();
-    
-    if (query === '') {
-      currentPage = 1;
-      renderInventoryTable(allItems, currentPage);
-      renderPagination(allItems);
-      return;
-    }
-    
-    const filtered = allItems.filter(item => 
-      item.name.toLowerCase().includes(query) ||
-      (item.category?.name || '').toLowerCase().includes(query) ||
-      (item.reporter?.name || '').toLowerCase().includes(query)
-    );
-    
     currentPage = 1;
-    renderInventoryTable(filtered, currentPage);
-    renderPagination(filtered);
+    renderInventoryView({ keepPage: false });
   });
 }
 
@@ -396,13 +442,13 @@ async function initAdmin() {
   setupTabs();
   
   try {
-    allItems = await getItems();
+    allItems = await getItems(getSortParams());
     allUsers = await getUsers();
     
-    renderInventoryTable(allItems, currentPage);
-    renderPagination(allItems);
+    renderInventoryView();
     renderUsersTable(allUsers);
     renderCharts(allItems, allUsers);
+    setupInventorySorting();
     setupSearch();
     
     const modal = document.getElementById('image-modal');

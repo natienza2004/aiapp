@@ -2,6 +2,8 @@ import { createItem, deleteItem, getItem, getItems, updateItem, getDashboardSumm
 import { getStoredUser, requireAuth, redirectToDashboard } from './auth.js';
 
 const statusEl = document.getElementById('form-status');
+const DEFAULT_SORT = { sortBy: 'updatedAt', sortOrder: 'desc' };
+const sortState = { ...DEFAULT_SORT };
 
 function setStatus(message, type = 'info') {
   if (!statusEl) return;
@@ -16,6 +18,60 @@ function getParam(name) {
 function formatDate(iso) {
   const date = new Date(iso);
   return date.toLocaleString();
+}
+
+function getSortParams() {
+  return { sortBy: sortState.sortBy, sortOrder: sortState.sortOrder };
+}
+
+function updateSortHeaders() {
+  document.querySelectorAll('[data-sort-key]').forEach((header) => {
+    const icon = header.querySelector('.sort-icon');
+    const isActive = header.dataset.sortKey === sortState.sortBy;
+    header.classList.toggle('active-sort', isActive);
+    if (icon) icon.textContent = isActive ? (sortState.sortOrder === 'asc' ? '\u2191' : '\u2193') : '';
+  });
+}
+
+async function loadItemsForCurrentControls(user, tbody) {
+  const searchInput = document.getElementById('search-input');
+  const query = searchInput ? searchInput.value.trim() : '';
+  const items = query.length >= 2
+    ? await searchItems(query, getSortParams())
+    : await getItems(getSortParams());
+  const itemCountBadge = document.getElementById('item-count');
+  if (itemCountBadge) itemCountBadge.textContent = items.length;
+  renderItems(items, user, tbody);
+}
+
+function bindSortHeaders(user, tbody) {
+  const headers = document.querySelectorAll('[data-sort-key]');
+  headers.forEach((header) => {
+    if (header.dataset.sortBound === 'true') return;
+    header.dataset.sortBound = 'true';
+    header.addEventListener('click', async () => {
+      const sortBy = header.dataset.sortKey;
+      if (!sortBy) return;
+
+      if (sortState.sortBy !== sortBy) {
+        sortState.sortBy = sortBy;
+        sortState.sortOrder = 'asc';
+      } else if (sortState.sortOrder === 'asc') {
+        sortState.sortOrder = 'desc';
+      } else {
+        sortState.sortBy = DEFAULT_SORT.sortBy;
+        sortState.sortOrder = DEFAULT_SORT.sortOrder;
+      }
+
+      updateSortHeaders();
+      try {
+        await loadItemsForCurrentControls(user, tbody);
+      } catch (err) {
+        tbody.innerHTML = `<tr><td colspan="9" class="loading">${err.message}</td></tr>`;
+      }
+    });
+  });
+  updateSortHeaders();
 }
 
 function createImageCell(item) {
@@ -87,7 +143,7 @@ async function initList() {
   if (!tbody) return;
 
   try {
-    const [items, summary] = await Promise.all([getItems(), getDashboardSummary()]);
+    const [items, summary] = await Promise.all([getItems(getSortParams()), getDashboardSummary()]);
     
     // Update stats
     const totalItemsEl = document.getElementById('total-items');
@@ -106,6 +162,7 @@ async function initList() {
     if (itemCountBadge) itemCountBadge.textContent = items.length;
     
     renderItems(items, user, tbody);
+    bindSortHeaders(user, tbody);
 
     const modal = document.getElementById('image-modal');
     const closeBtn = modal.querySelector('.close');
@@ -127,7 +184,9 @@ async function initList() {
         const query = e.target.value.trim();
         
         if (query.length === 0) {
-          renderItems(items, user, tbody);
+          loadItemsForCurrentControls(user, tbody).catch((err) => {
+            tbody.innerHTML = `<tr><td colspan="9" class="loading">${err.message}</td></tr>`;
+          });
           return;
         }
         
@@ -138,8 +197,10 @@ async function initList() {
         debounceTimer = setTimeout(async () => {
           try {
             tbody.innerHTML = '<tr><td colspan="9" class="loading">Searching...</td></tr>';
-            const results = await searchItems(query);
+            const results = await searchItems(query, getSortParams());
             renderItems(results, user, tbody);
+            const itemCountBadge = document.getElementById('item-count');
+            if (itemCountBadge) itemCountBadge.textContent = results.length;
           } catch (err) {
             tbody.innerHTML = `<tr><td colspan="9" class="loading">${err.message}</td></tr>`;
           }

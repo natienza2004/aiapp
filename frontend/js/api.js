@@ -17,15 +17,26 @@ async function safeJson(response) {
   return response.json();
 }
 
-export async function getItems() {
-  const response = await fetch(BASE_URL, {
+function buildQuery(params = {}) {
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value !== undefined && value !== null && value !== '') {
+      query.set(key, value);
+    }
+  });
+  const queryString = query.toString();
+  return queryString ? `?${queryString}` : '';
+}
+
+export async function getItems(params = {}) {
+  const response = await fetch(`${BASE_URL}${buildQuery(params)}`, {
     headers: getAuthHeaders(),
   });
   return safeJson(response);
 }
 
-export async function searchItems(query) {
-  const response = await fetch(`${BASE_URL}/search?query=${encodeURIComponent(query)}`, {
+export async function searchItems(query, params = {}) {
+  const response = await fetch(`${BASE_URL}/search${buildQuery({ query, ...params })}`, {
     headers: getAuthHeaders(),
   });
   return safeJson(response);
