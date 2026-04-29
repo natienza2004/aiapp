@@ -65,12 +65,17 @@ export async function register({ name, email, password, role }) {
 
 export function attachAuthActions() {
   const user = getStoredUser();
+  const page = document.body.dataset.page;
   const logoutButton = document.getElementById('logout');
   if (logoutButton) {
     logoutButton.addEventListener('click', () => {
       clearStoredUser();
       window.location.href = 'login.html';
     });
+  }
+
+  if (page === 'login' || page === 'register') {
+    return;
   }
 
   const loginLink = document.querySelector('a[href="login.html"]');
@@ -93,6 +98,28 @@ export function redirectToDashboard(user) {
   }
 }
 
+function setAuthLoading(isLoading) {
+  document.dispatchEvent(new CustomEvent('auth-loading-change', {
+    detail: { loading: isLoading },
+  }));
+}
+
+function setFormLoading(form, isLoading) {
+  form?.classList.toggle('is-loading', isLoading);
+  const submitButton = form?.querySelector('button[type="submit"]');
+  if (submitButton) {
+    submitButton.disabled = isLoading;
+    submitButton.setAttribute('aria-busy', String(isLoading));
+  }
+  setAuthLoading(isLoading);
+}
+
+function attachSubmitOnce(form, handler) {
+  if (!form || form.dataset.authSubmitBound === 'true') return;
+  form.dataset.authSubmitBound = 'true';
+  form.addEventListener('submit', handler);
+}
+
 // Page initialization
 const page = document.body.dataset.page;
 if (page === 'login') {
@@ -103,9 +130,10 @@ if (page === 'login') {
   attachAuthActions();
   const form = document.getElementById('login-form');
   const status = document.getElementById('form-status');
-  form?.addEventListener('submit', async (event) => {
+  attachSubmitOnce(form, async (event) => {
     event.preventDefault();
     status.textContent = '';
+    setFormLoading(form, true);
     const formData = new FormData(form);
     try {
       const user = await login({
@@ -116,6 +144,7 @@ if (page === 'login') {
     } catch (err) {
       status.textContent = err.message;
       status.className = 'status error';
+      setFormLoading(form, false);
     }
   });
 }
@@ -128,9 +157,10 @@ if (page === 'register') {
   attachAuthActions();
   const form = document.getElementById('register-form');
   const status = document.getElementById('form-status');
-  form?.addEventListener('submit', async (event) => {
+  attachSubmitOnce(form, async (event) => {
     event.preventDefault();
     status.textContent = '';
+    setFormLoading(form, true);
     const formData = new FormData(form);
     try {
       await register({
@@ -141,12 +171,11 @@ if (page === 'register') {
       });
       status.textContent = 'Registration successful! Redirecting to login...';
       status.className = 'status success';
-      setTimeout(() => {
-        window.location.href = 'login.html';
-      }, 800);
+      window.location.href = 'login.html';
     } catch (err) {
       status.textContent = err.message;
       status.className = 'status error';
+      setFormLoading(form, false);
     }
   });
 }

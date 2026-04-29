@@ -26,7 +26,16 @@ import { ItemHistory } from './item-history/item-history.entity';
   imports: [
     ServeStaticModule.forRoot({
       rootPath: join(process.cwd(), 'frontend'),
-      exclude: ['/items*', '/users*', '/uploads*', '/categories*', '/locations*', '/reminders*', '/dashboard*', '/reports*'],
+      exclude: [
+        '/items/{*path}',
+        '/users/{*path}',
+        '/uploads/{*path}',
+        '/categories/{*path}',
+        '/locations/{*path}',
+        '/reminders/{*path}',
+        '/dashboard/{*path}',
+        '/reports/{*path}',
+      ],
     }),
     MulterModule.register({
       storage: diskStorage({
@@ -39,7 +48,7 @@ import { ItemHistory } from './item-history/item-history.entity';
     }),
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: process.env.DB_HOST ?? 'localhost',
+      host: process.env.DB_HOST ?? '127.0.0.1',
       port: Number(process.env.DB_PORT ?? 3306),
       username: process.env.DB_USER ?? 'root',
       password: process.env.DB_PASS ?? '',

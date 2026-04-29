@@ -47,6 +47,7 @@ export class UsersService {
   async validateCredentials(email: string, password: string): Promise<Partial<User> | null> {
     const user = await this.findByEmail(email);
     if (!user) return null;
+    if (!user.password || !user.password.startsWith('$2')) return null;
     const match = await bcrypt.compare(password, user.password);
     if (!match) return null;
     return { id: user.id, name: user.name, role: user.role };
